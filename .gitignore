@@ -1,0 +1,3 @@
+# Ignore Python cache files __pycache__/ *.pyc # Ignore environment files .env # Ignore system files .DS_Store Thumbs.db # Ignore folders node_modules/ build/ 
+
+.env .gitignore .gradio/ .vscode/
