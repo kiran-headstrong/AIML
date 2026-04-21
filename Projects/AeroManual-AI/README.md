@@ -156,7 +156,7 @@ sequenceDiagram
 ## 🏗️ Project Structure
 
 ```
-AeroManual-AI/
+Projects/AeroManual-AI/
 │
 ├── 📂 app/
 │   ├── __init__.py .............. Package init
@@ -206,12 +206,12 @@ AeroManual-AI/
 
 ### 1. Install Dependencies
 ```bash
-cd AeroManual-AI
+cd Projects/AeroManual-AI
 pip install -r requirements.txt
 ```
 
 ### 2. Configure Environment
-Ensure the `.env` file in the AIML root directory contains:
+Ensure the `.env` file in the AIML root directory (two levels up) contains:
 ```env
 GROQ_API_KEY=<your_groq_api_key>
 ```
@@ -220,14 +220,14 @@ GROQ_API_KEY=<your_groq_api_key>
 
 **Terminal 1 — API server:**
 ```bash
-cd AeroManual-AI
+cd Projects/AeroManual-AI
 set NO_PROXY=localhost,127.0.0.1
 uvicorn app.api:app --reload --host 127.0.0.1 --port 8000
 ```
 
 **Terminal 2 — Streamlit UI:**
 ```bash
-cd AeroManual-AI
+cd Projects/AeroManual-AI
 set NO_PROXY=localhost,127.0.0.1
 streamlit run ui.py
 ```
