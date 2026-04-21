@@ -5,3 +5,7 @@
 .gradio/ 
 .vscode/
 .venv/
+AeroManual-AI/vectorstore/
+AeroManual-AI/uploads/
+__pycache__/
+*.pyc
