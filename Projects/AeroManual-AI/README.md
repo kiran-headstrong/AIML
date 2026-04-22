@@ -7,22 +7,23 @@ An intelligent document Q&A application powered by Retrieval-Augmented Generatio
 ## 📐 High-Level Architecture
 
 ```
- ┌──────────┐       ┌───────────────┐       ┌──────────────────┐
- │          │       │               │       │                  │
- │  👤 User │──────▶│  🖥️ Streamlit │──────▶│  ⚡ FastAPI       │
- │          │       │     UI        │       │   Backend        │
- └──────────┘       └───────────────┘       └────────┬─────────┘
-                                                     │
-                            ┌────────────────────────┼────────────────────────┐
-                            │                        │                        │
-                            ▼                        ▼                        ▼
-                    ┌───────────────┐      ┌─────────────────┐     ┌──────────────────┐
-                    │ 📄 Document   │      │ 🗂️ FAISS Vector │     │ 🤖 Groq LLM      │
-                    │    Loader     │      │     Store       │     │  Llama 3.1 8B    │
-                    │               │      │                 │     │                  │
-                    │ PDF/DOCX/TXT  │─────▶│  Embeddings +   │────▶│  Context-Aware   │
-                    │ → Chunks      │      │  Similarity     │     │  Answer Gen      │
-                    └───────────────┘      └─────────────────┘     └──────────────────┘
+ ┌──────────┐       ┌───────────────┐       ┌──────────────────────────────────────┐
+ │          │       │               │       │         ⚡ FastAPI Backend             │
+ │  👤 User │──────▶│  🖥️ Streamlit │──────▶│                                      │
+ │          │       │     UI        │       │  🔒 CORS + Rate Limit + Validation   │
+ └──────────┘       │  (streaming)  │       │  📝 Structured Logging               │
+                    └───────────────┘       └──────────────┬───────────────────────┘
+                                                           │
+                          ┌────────────────────────────────┼──────────────────────────┐
+                          │                                │                          │
+                          ▼                                ▼                          ▼
+                  ┌───────────────┐          ┌──────────────────────┐     ┌──────────────────┐
+                  │ 📄 Document   │          │ 🗂️ FAISS Vector Store │     │ 🤖 Groq LLM      │
+                  │    Loader     │          │                      │     │  Llama 3.1 8B    │
+                  │               │          │  ⚡ In-memory cache   │     │                  │
+                  │ PDF/DOCX/TXT  │─────────▶│  🔐 Thread-safe lock │────▶│  💬 Chat memory  │
+                  │ → Chunks      │          │  🖥️ CPU / 🎮 GPU     │     │  🌊 SSE Streaming│
+                  └───────────────┘          └──────────────────────┘     └──────────────────┘
 ```
 
 ---
@@ -45,11 +46,12 @@ An intelligent document Q&A application powered by Retrieval-Augmented Generatio
   ✅ Done!                     🗂️ Store                       ✂️ Split into Chunks
  ┌────────────┐              ┌────────────────┐              ┌────────────────────┐
  │            │              │                │              │                    │
- │  Response: │    ◀──────   │  FAISS Index   │    ◀──────   │  500 chars/chunk   │
- │  filename  │              │  saved to disk │              │  100 char overlap  │
- │  + count   │              │  vectorstore/  │              │                    │
- │            │              │                │              │  → Embed with      │
+ │  Response: │    ◀──────   │  FAISS Index   │    ◀──────   │  1000 chars/chunk  │
+ │  filename  │              │  (in-memory    │              │  200 char overlap  │
+ │  + count   │              │   + disk)      │              │                    │
+ │            │              │  CPU or GPU    │              │  → Embed with      │
  └────────────┘              └────────────────┘              │  MiniLM-L6-v2      │
+                                                             │  (batch_size=64)   │
                                                              └────────────────────┘
 ```
 
@@ -89,7 +91,7 @@ flowchart LR
         B -->|.docx| D["Docx2txtLoader"]
         B -->|.txt| E["TextLoader"]
         B -->|other| F["UnstructuredLoader"]
-        C & D & E & F --> G["✂️ Splitter\n500 chars | 100 overlap"]
+        C & D & E & F --> G["✂️ Splitter\n1000 chars | 200 overlap"]
         G --> H["📦 Chunks"]
     end
 
@@ -102,9 +104,9 @@ flowchart LR
         K["❓ Question"] --> L["🔢 Embed Question"]
         L --> M["🔍 Top-8 Search"]
         J -.-> M
-        M --> N["📝 Prompt\nContext + Question"]
+        M --> N["📝 Prompt\nHistory + Context + Question"]
         N --> O["🤖 Groq Llama 3.1"]
-        O --> P["✅ Answer + Sources"]
+        O --> P["✅ Streamed Answer + Sources"]
     end
 
     style A fill:#e1f5fe
@@ -139,15 +141,15 @@ sequenceDiagram
     end
 
     rect rgb(227, 242, 253)
-        Note over User, LLM: ❓ Query Flow
+        Note over User, LLM: ❓ Query Flow (Streaming)
         User->>UI: Ask question
-        UI->>API: POST /query {question}
-        API->>VS: Similarity search (k=8)
-        VS-->>API: Top 8 chunks
-        API->>LLM: Context + Question
-        LLM-->>API: Generated answer
-        API-->>UI: {answer, sources}
-        UI-->>User: 💡 Answer + Sources
+        UI->>API: POST /query/stream {question, chat_history}
+        API->>VS: In-memory similarity search (k=8)
+        VS-->>API: Top 8 chunks (CPU or GPU)
+        API->>LLM: Chat History + Context + Question
+        LLM-->>API: Stream tokens via SSE
+        API-->>UI: Stream tokens in real-time
+        UI-->>User: 💡 Live Answer + Sources
     end
 ```
 
@@ -198,20 +200,27 @@ Projects/AeroManual-AI/
 |---|---|---|
 | 🤖 `GROQ_MODEL` | `llama-3.1-8b-instant` | LLM for answer generation |
 | 🧠 `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Embedding model (384-dim) |
-| ✂️ `CHUNK_SIZE` | `500` | Characters per text chunk |
-| 🔗 `CHUNK_OVERLAP` | `100` | Overlap between chunks |
+| ✂️ `CHUNK_SIZE` | `1000` | Characters per text chunk |
+| 🔗 `CHUNK_OVERLAP` | `200` | Overlap between chunks |
 | 🔍 `TOP_K` | `8` | Chunks retrieved per query |
+| 📏 `RELEVANCE_THRESHOLD` | `1.5` | FAISS L2 distance cutoff (lower = stricter) |
+| 📦 `MAX_FILE_SIZE_MB` | `50` | Maximum upload file size in MB |
+| 🖥️ `FAISS_BACKEND` | `cpu` | FAISS backend: `cpu` (laptop) or `gpu` (server) |
+| 📝 `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR) |
+
+All parameters can be overridden via environment variables.
 
 ---
 
 ## 🌐 API Endpoints
 
-| Method | Endpoint | Input | Output |
-|---|---|---|---|
-| `POST` | `/upload` | File (multipart) | `{filename, chunks_indexed}` |
-| `POST` | `/query` | `{question: string}` | `{answer, sources}` |
-| `GET` | `/health` | — | `{status: "ok"}` |
-| `GET` | `/metrics` | — | Prometheus metrics (auto-instrumented) |
+| Method | Endpoint | Input | Output | Rate Limit |
+|---|---|---|---|---|
+| `POST` | `/upload` | File (multipart, max 50MB) | `{filename, chunks_indexed, status}` | 20/min |
+| `POST` | `/query` | `{question, chat_history}` | `{answer, sources}` | 20/min |
+| `POST` | `/query/stream` | `{question, chat_history}` | SSE token stream | 20/min |
+| `GET` | `/health` | — | `{status: "ok"}` | — |
+| `GET` | `/metrics` | — | Prometheus metrics (auto-instrumented) | — |
 
 ---
 
@@ -227,13 +236,22 @@ cd Projects/AeroManual-AI
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+### 2. Verify All Dependencies & Imports
+Run this to confirm every package is installed and all imports resolve correctly:
+```bash
+python -c "from app.api import app; print('All imports OK')"
+```
+If you see `ModuleNotFoundError`, install the missing package and re-run until it prints `All imports OK`.
+
+### 3. Configure Environment
 Ensure the `.env` file in the AIML root directory (two levels up) contains:
 ```env
 GROQ_API_KEY=<your_groq_api_key>
+FAISS_BACKEND=cpu
+LOG_LEVEL=INFO
 ```
 
-### 3. Run the Application
+### 4. Run the Application
 
 **Terminal 1 — API server:**
 ```bash
@@ -251,7 +269,7 @@ streamlit run ui.py
 
 > ⚠️ The `NO_PROXY` and `--host 127.0.0.1` flags are required on corporate networks to bypass proxy interception of localhost traffic.
 
-### 4. Open the App
+### 5. Open the App
 Navigate to **http://localhost:8501** in your browser.
 
 ---
@@ -601,7 +619,8 @@ curl http://localhost:8000/metrics
 | [Groq — Llama 3.1 8B](https://console.groq.com/) | `llama-3.1-8b-instant` | LLM for context-aware answer generation |
 | [Sentence-Transformers](https://www.sbert.net/) | latest | Embedding model framework |
 | [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) | — | 384-dim embedding model for semantic search |
-| [FAISS (CPU)](https://github.com/facebookresearch/faiss) | latest | Vector similarity search & indexing |
+| [FAISS (CPU/GPU)](https://github.com/facebookresearch/faiss) | latest | Vector similarity search & indexing (configurable backend) |
+| [SlowAPI](https://github.com/laurentS/slowapi) | latest | Rate limiting for FastAPI endpoints |
 
 ### Document Processing
 

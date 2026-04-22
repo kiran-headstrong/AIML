@@ -23,11 +23,18 @@ logger = logging.getLogger(__name__)
 # Initialize the Groq LLM with low temperature for factual answers
 _llm = ChatGroq(api_key=GROQ_API_KEY, model=GROQ_MODEL, temperature=0.3)
 
-# Prompt template with chat history support for multi-turn conversations
+# Prompt template with formatting instructions and chat history support
 _prompt = ChatPromptTemplate.from_template(
-    """You are a helpful assistant. Answer the question thoroughly and in detail
-using the provided context. Include all relevant information from the context.
-If the context doesn't contain enough information, say so and answer what you can.
+    """You are a helpful technical assistant. Answer the question using the provided context.
+
+Formatting Rules:
+- Structure your answer with clear **headings** and **subheadings** using Markdown.
+- Use **bullet points** or **numbered lists** for items, steps, or categories.
+- Use **bold** for key terms, names, and important concepts.
+- Use tables when comparing items or listing structured data.
+- Keep paragraphs short (2-3 sentences max).
+- Start with a brief summary sentence, then provide details.
+- If the context doesn't contain enough information, say so clearly.
 
 Chat History:
 {chat_history}
