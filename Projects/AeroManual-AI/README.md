@@ -81,6 +81,39 @@ An intelligent document Q&A application powered by Retrieval-Augmented Generatio
 
 ---
 
+## ✂️ Chunking & Embedding Strategy
+
+### Chunking — Recursive Character Text Splitting
+
+| Parameter | Value | Why |
+|---|---|---|
+| Strategy | `RecursiveCharacterTextSplitter` | Splits by natural boundaries: `\n\n` → `\n` → ` ` → characters. Respects paragraph/sentence structure instead of cutting arbitrarily |
+| `CHUNK_SIZE` | `1000` chars | Large enough to preserve full sentences and context; small enough to stay within embedding model limits |
+| `CHUNK_OVERLAP` | `200` chars | Ensures sentences that span a chunk boundary aren't lost — the end of one chunk repeats at the start of the next |
+
+**How it works:**
+1. Tries to split on `\n\n` (paragraphs) first
+2. Falls back to `\n` (lines), then spaces, then characters
+3. Keeps splitting recursively until each piece is ≤ 1000 chars
+4. Each chunk carries metadata (`source` file path) for source attribution
+
+### Embedding — `all-MiniLM-L6-v2`
+
+| Parameter | Value | Why |
+|---|---|---|
+| Model | `sentence-transformers/all-MiniLM-L6-v2` | Lightweight (22M params), fast on CPU, strong semantic understanding for its size |
+| Dimensions | `384` | Compact vector size — fast FAISS search with good accuracy |
+| `batch_size` | `64` | Embeds 64 chunks at once during indexing — 2-5x faster than one-by-one |
+| Runtime | CPU (default) | Runs on any laptop without GPU; switch to GPU via `FAISS_BACKEND=gpu` |
+
+**How it works:**
+1. Each text chunk is passed through the MiniLM transformer model
+2. The model outputs a 384-dimensional dense vector capturing semantic meaning
+3. Similar meaning = vectors close together in space (low L2 distance)
+4. At query time, the question is embedded with the same model, then FAISS finds the top 8 closest chunks (L2 distance < 1.5)
+
+---
+
 ## 🧩 RAG Pipeline — Under the Hood
 
 ```mermaid

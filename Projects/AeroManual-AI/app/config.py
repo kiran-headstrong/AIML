@@ -27,6 +27,7 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # ---------------------------------------------------------------------------
 # Paths: base directories for uploads and vector store persistence
