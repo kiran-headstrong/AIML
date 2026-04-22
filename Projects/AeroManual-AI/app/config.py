@@ -62,6 +62,13 @@ TOP_K = 8                       # number of chunks to retrieve
 RELEVANCE_THRESHOLD = 1.5       # FAISS L2 distance cutoff (lower = stricter)
 
 # ---------------------------------------------------------------------------
+# FAISS: backend selection (cpu or gpu)
+# Set FAISS_BACKEND=gpu on servers with CUDA GPUs for ~10-100x faster search.
+# Defaults to 'cpu' for laptop/local development.
+# ---------------------------------------------------------------------------
+FAISS_BACKEND = os.getenv("FAISS_BACKEND", "cpu").lower()
+
+# ---------------------------------------------------------------------------
 # Upload: file validation constraints
 # ---------------------------------------------------------------------------
 MAX_FILE_SIZE_MB = 50

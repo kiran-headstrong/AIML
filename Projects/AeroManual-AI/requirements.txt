@@ -6,6 +6,10 @@ langchain-community>=0.3.0
 langchain-groq>=0.2.0
 langchain-huggingface>=0.1.0
 langchain-text-splitters>=0.3.0
+# FAISS: install ONE of these based on your environment
+# CPU (default for laptops): pip install faiss-cpu
+# GPU (for servers with CUDA): pip install faiss-gpu
+# Controlled by FAISS_BACKEND env var (cpu|gpu), defaults to cpu
 faiss-cpu>=1.9.0
 sentence-transformers>=3.3.0
 pypdf>=5.1.0

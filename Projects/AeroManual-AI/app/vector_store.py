@@ -9,15 +9,37 @@ Key optimizations over the original implementation:
     - Duplicate detection: Tracks indexed filenames to avoid re-indexing
       the same document twice.
     - Batch embeddings: Configured batch_size=64 for faster bulk indexing.
+    - GPU support: Configurable FAISS backend (cpu/gpu) via FAISS_BACKEND
+      env var. GPU mode gives ~10-100x faster search for large indexes.
 """
 
 import logging
 import threading
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from app.config import EMBEDDING_MODEL, VECTORSTORE_DIR, TOP_K, RELEVANCE_THRESHOLD
+from app.config import (
+    EMBEDDING_MODEL, VECTORSTORE_DIR, TOP_K, RELEVANCE_THRESHOLD, FAISS_BACKEND,
+)
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# FAISS backend: auto-detect GPU availability or use configured backend
+# ---------------------------------------------------------------------------
+_use_gpu = False
+
+if FAISS_BACKEND == "gpu":
+    try:
+        import faiss as _faiss_lib
+        if _faiss_lib.get_num_gpus() > 0:
+            _use_gpu = True
+            logger.info("FAISS GPU backend enabled (%d GPUs detected)", _faiss_lib.get_num_gpus())
+        else:
+            logger.warning("FAISS_BACKEND=gpu but no GPUs found, falling back to CPU")
+    except Exception:
+        logger.warning("FAISS GPU import failed, falling back to CPU")
+else:
+    logger.info("FAISS CPU backend selected (set FAISS_BACKEND=gpu for GPU mode)")
 
 # Embedding model with batch processing for faster indexing
 _embeddings = HuggingFaceEmbeddings(
@@ -26,6 +48,34 @@ _embeddings = HuggingFaceEmbeddings(
 )
 
 _index_path = str(VECTORSTORE_DIR / "index")
+
+
+def _move_index_to_gpu(store):
+    """
+    Move a FAISS index to GPU for accelerated similarity search.
+
+    Only called when FAISS_BACKEND=gpu and a CUDA GPU is available.
+    Falls back gracefully to CPU if GPU transfer fails.
+
+    Args:
+        store: FAISS vector store instance.
+
+    Returns:
+        The same store (index is modified in-place by faiss).
+    """
+    if not _use_gpu:
+        return store
+    try:
+        import faiss as _faiss_lib
+        gpu_res = _faiss_lib.StandardGpuResources()
+        cpu_index = store.index
+        gpu_index = _faiss_lib.index_cpu_to_gpu(gpu_res, 0, cpu_index)
+        store.index = gpu_index
+        logger.info("FAISS index moved to GPU")
+    except Exception as e:
+        logger.warning("Failed to move FAISS index to GPU: %s (using CPU)", e)
+    return store
+
 
 # In-memory FAISS index cache — avoids disk I/O on every query
 _store_cache = None
@@ -48,6 +98,7 @@ def _load_from_disk():
         store = FAISS.load_local(
             _index_path, _embeddings, allow_dangerous_deserialization=True
         )
+        store = _move_index_to_gpu(store)
         logger.info("Loaded FAISS index from disk: %s", _index_path)
         return store
     except Exception:
@@ -112,6 +163,7 @@ def add_documents(docs: list, source_path: str = "") -> int:
             store.add_documents(docs)
         else:
             store = FAISS.from_documents(docs, _embeddings)
+            store = _move_index_to_gpu(store)
 
         store.save_local(_index_path)
         _store_cache = store
