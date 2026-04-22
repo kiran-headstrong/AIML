@@ -12,6 +12,7 @@ Features:
 """
 
 import logging
+import re
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -19,6 +20,15 @@ from app.config import GROQ_API_KEY, GROQ_MODEL
 from app.vector_store import search
 
 logger = logging.getLogger(__name__)
+
+MAX_QUESTION_LEN = 2000
+MAX_HISTORY_LEN = 10000
+
+
+def _sanitize_input(text: str, max_len: int) -> str:
+    """Strip control characters and truncate user input before use."""
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+    return text[:max_len]
 
 # Initialize the Groq LLM with low temperature for factual answers
 _llm = ChatGroq(api_key=GROQ_API_KEY, model=GROQ_MODEL, temperature=0.3)
@@ -102,6 +112,9 @@ def ask(question: str, chat_history: str = "") -> dict:
     """
     logger.info("Processing query: '%s'", question[:100])
 
+    question = _sanitize_input(question, MAX_QUESTION_LEN)
+    chat_history = _sanitize_input(chat_history, MAX_HISTORY_LEN)
+
     docs = search(question)
     if not docs:
         logger.warning("No relevant documents found for query")
@@ -139,6 +152,9 @@ async def ask_stream(question: str, chat_history: str = ""):
     """
     logger.info("Streaming query: '%s'", question[:100])
 
+    question = _sanitize_input(question, MAX_QUESTION_LEN)
+    chat_history = _sanitize_input(chat_history, MAX_HISTORY_LEN)
+
     docs = search(question)
     if not docs:
         logger.warning("No relevant documents found for streaming query")
@@ -154,4 +170,5 @@ async def ask_stream(question: str, chat_history: str = ""):
         "question": question,
         "chat_history": chat_history or "No previous conversation.",
     }):
-        yield chunk
+        if isinstance(chunk, str):
+            yield chunk

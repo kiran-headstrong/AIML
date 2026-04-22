@@ -84,6 +84,11 @@ class QueryRequest(BaseModel):
     chat_history: str = ""
 
 
+def _sanitize_log(value: str, max_len: int = 100) -> str:
+    """Strip newlines and control characters from user input before logging."""
+    return re.sub(r"[\r\n\t]", " ", value)[:max_len]
+
+
 def _sanitize_filename(filename: str) -> str:
     """
     Sanitize an uploaded filename to prevent path traversal attacks.
@@ -126,11 +131,21 @@ def _validate_file(file: UploadFile, content: bytes) -> None:
     from pathlib import Path
     ext = Path(file.filename).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
-        logger.warning("Disallowed file extension: %s", ext)
+        logger.warning("Disallowed file extension: %s", _sanitize_log(ext, 20))
         raise HTTPException(
             status_code=400,
-            detail=f"File type '{ext}' not allowed. Supported: {', '.join(ALLOWED_EXTENSIONS)}",
+            detail=f"File type not allowed. Supported: {', '.join(ALLOWED_EXTENSIONS)}",
         )
+
+    # Magic-byte validation: verify file content matches declared extension
+    MAGIC_BYTES = {
+        ".pdf": b"%PDF",
+        ".docx": b"PK\x03\x04",
+        ".doc": b"\xd0\xcf\x11\xe0",
+    }
+    if ext in MAGIC_BYTES and not content.startswith(MAGIC_BYTES[ext]):
+        logger.warning("File content does not match declared extension: %s", _sanitize_log(ext, 20))
+        raise HTTPException(status_code=400, detail="File content does not match its extension.")
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +168,7 @@ async def upload_document(request: Request, file: UploadFile = File(...)):
     Returns:
         JSON with filename and chunks_indexed count.
     """
-    logger.info("Upload request: filename=%s", file.filename)
+    logger.info("Upload request: filename=%s", _sanitize_log(file.filename))
 
     # Read and validate file content
     content = await file.read()
@@ -161,7 +176,12 @@ async def upload_document(request: Request, file: UploadFile = File(...)):
 
     # Sanitize filename and prepare destination path
     safe_name = _sanitize_filename(file.filename)
-    dest = UPLOAD_DIR / safe_name
+    dest = (UPLOAD_DIR / safe_name).resolve()
+
+    # Confine path strictly within UPLOAD_DIR to prevent path traversal
+    if not str(dest).startswith(str(UPLOAD_DIR.resolve())):
+        logger.warning("Path traversal attempt blocked: %s", _sanitize_log(safe_name))
+        raise HTTPException(status_code=400, detail="Invalid filename.")
 
     # Check for duplicate uploads
     if is_duplicate(str(dest)):
@@ -171,7 +191,7 @@ async def upload_document(request: Request, file: UploadFile = File(...)):
     # Save file to disk
     with open(dest, "wb") as f:
         f.write(content)
-    logger.info("File saved: %s (%.2f MB)", dest, len(content) / (1024 * 1024))
+    logger.info("File saved: %s (%.2f MB)", _sanitize_log(safe_name), len(content) / (1024 * 1024))
 
     # Load, split, and index in a thread pool to avoid blocking the event loop
     try:
@@ -181,7 +201,7 @@ async def upload_document(request: Request, file: UploadFile = File(...)):
         logger.error("Failed to process file %s: %s", safe_name, e, exc_info=True)
         raise HTTPException(status_code=400, detail=f"Failed to process file: {e}")
 
-    logger.info("Upload complete: %s → %d chunks indexed", safe_name, count)
+    logger.info("Upload complete: %s -> %d chunks indexed", _sanitize_log(safe_name), count)
     return {"filename": safe_name, "chunks_indexed": count}
 
 
@@ -203,7 +223,7 @@ async def query_documents(request: Request, req: QueryRequest):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
 
-    logger.info("Query request: '%s'", req.question[:100])
+    logger.info("Query request: '%s'", _sanitize_log(req.question))
     result = await asyncio.to_thread(ask, req.question, req.chat_history)
     return result
 
@@ -226,7 +246,7 @@ async def query_stream(request: Request, req: QueryRequest):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
 
-    logger.info("Stream request: '%s'", req.question[:100])
+    logger.info("Stream request: '%s'", _sanitize_log(req.question))
 
     async def generate():
         """Async generator that yields SSE-formatted token chunks."""

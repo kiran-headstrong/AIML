@@ -15,7 +15,7 @@ from langchain_community.document_loaders import (
     UnstructuredFileLoader,
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from app.config import CHUNK_SIZE, CHUNK_OVERLAP
+from app.config import CHUNK_SIZE, CHUNK_OVERLAP, UPLOAD_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,12 @@ def load_and_split(file_path: str) -> list:
         Exception: If the file cannot be loaded or parsed.
     """
     ext = Path(file_path).suffix.lower()
+    resolved = Path(file_path).resolve()
+
+    # Confine file access strictly within UPLOAD_DIR
+    if not str(resolved).startswith(str(UPLOAD_DIR.resolve())):
+        raise ValueError(f"Access outside upload directory is not allowed: {file_path}")
+
     loader_cls = LOADER_MAP.get(ext, UnstructuredFileLoader)
     logger.info("Loading file=%s with loader=%s", file_path, loader_cls.__name__)
 

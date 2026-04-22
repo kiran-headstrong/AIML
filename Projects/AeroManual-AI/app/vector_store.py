@@ -78,13 +78,15 @@ def _move_index_to_gpu(store):
 
 
 # In-memory FAISS index cache — avoids disk I/O on every query
-_store_cache = None
-
 # Thread lock — prevents race conditions during concurrent add_documents calls
-_lock = threading.Lock()
-
 # Tracks which files have been indexed to prevent duplicate ingestion
-_indexed_files: set = set()
+class _VectorStoreState:
+    def __init__(self):
+        self.cache = None
+        self.lock = threading.Lock()
+        self.indexed_files: set = set()
+
+_state = _VectorStoreState()
 
 
 def _load_from_disk():
@@ -116,10 +118,9 @@ def _get_store():
     Returns:
         Cached FAISS store instance, or None if no index exists yet.
     """
-    global _store_cache
-    if _store_cache is None:
-        _store_cache = _load_from_disk()
-    return _store_cache
+    if _state.cache is None:
+        _state.cache = _load_from_disk()
+    return _state.cache
 
 
 def is_duplicate(source_path: str) -> bool:
@@ -132,7 +133,7 @@ def is_duplicate(source_path: str) -> bool:
     Returns:
         True if the file was already indexed in this session.
     """
-    return source_path in _indexed_files
+    return source_path in _state.indexed_files
 
 
 def add_documents(docs: list, source_path: str = "") -> int:
@@ -155,7 +156,7 @@ def add_documents(docs: list, source_path: str = "") -> int:
     """
     global _store_cache
 
-    with _lock:
+    with _state.lock:
         logger.info("Adding %d chunks to FAISS index (lock acquired)", len(docs))
         store = _get_store()
 
@@ -166,10 +167,10 @@ def add_documents(docs: list, source_path: str = "") -> int:
             store = _move_index_to_gpu(store)
 
         store.save_local(_index_path)
-        _store_cache = store
+        _state.cache = store
 
         if source_path:
-            _indexed_files.add(source_path)
+            _state.indexed_files.add(source_path)
 
         logger.info(
             "FAISS index updated: +%d chunks, saved to %s", len(docs), _index_path
