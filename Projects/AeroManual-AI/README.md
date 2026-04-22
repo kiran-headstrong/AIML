@@ -554,6 +554,162 @@ curl http://localhost:8000/metrics
 
 ---
 
+## 🧰 Tools & Technologies
+
+### Application Stack
+
+```
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │                          AeroManual-AI Tech Stack                           │
+ │                                                                             │
+ │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐   │
+ │  │  Frontend    │  │  Backend    │  │  AI / RAG   │  │  DevOps &       │   │
+ │  │             │  │             │  │             │  │  Monitoring     │   │
+ │  │  Streamlit  │  │  FastAPI    │  │  LangChain  │  │  Docker         │   │
+ │  │  Requests   │  │  Uvicorn    │  │  Groq LLM   │  │  Kubernetes     │   │
+ │  │             │  │  Pydantic   │  │  FAISS      │  │  Prometheus     │   │
+ │  │             │  │             │  │  HuggingFace│  │  Grafana        │   │
+ │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────┘   │
+ └─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Frontend
+
+| Tool | Version | Purpose |
+|---|---|---|
+| [Streamlit](https://streamlit.io/) | latest | Interactive chat UI for document upload & Q&A |
+| [Requests](https://docs.python-requests.org/) | latest | HTTP client for UI → API communication |
+
+### Backend
+
+| Tool | Version | Purpose |
+|---|---|---|
+| [FastAPI](https://fastapi.tiangolo.com/) | latest | High-performance async REST API framework |
+| [Uvicorn](https://www.uvicorn.org/) | latest | ASGI server to run FastAPI |
+| [Pydantic](https://docs.pydantic.dev/) | v2 | Request/response data validation |
+| [python-multipart](https://github.com/Kludex/python-multipart) | latest | File upload handling in FastAPI |
+| [python-dotenv](https://github.com/theskumar/python-dotenv) | latest | Environment variable management from `.env` files |
+
+### AI / RAG Pipeline
+
+| Tool | Version | Purpose |
+|---|---|---|
+| [LangChain](https://python.langchain.com/) | latest | RAG orchestration framework (chains, prompts, output parsers) |
+| [LangChain-Groq](https://python.langchain.com/docs/integrations/chat/groq/) | latest | Groq LLM integration for fast inference |
+| [LangChain-HuggingFace](https://python.langchain.com/docs/integrations/text_embedding/huggingfacehub/) | latest | HuggingFace embedding model integration |
+| [LangChain-Community](https://python.langchain.com/docs/integrations/) | latest | Document loaders (PDF, DOCX, TXT, Unstructured) |
+| [Groq — Llama 3.1 8B](https://console.groq.com/) | `llama-3.1-8b-instant` | LLM for context-aware answer generation |
+| [Sentence-Transformers](https://www.sbert.net/) | latest | Embedding model framework |
+| [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) | — | 384-dim embedding model for semantic search |
+| [FAISS (CPU)](https://github.com/facebookresearch/faiss) | latest | Vector similarity search & indexing |
+
+### Document Processing
+
+| Tool | Purpose |
+|---|---|
+| [PyPDF](https://pypdf.readthedocs.io/) | PDF document loading & text extraction |
+| [python-docx](https://python-docx.readthedocs.io/) | DOCX document loading |
+| [Unstructured](https://unstructured.io/) | Fallback loader for other file formats |
+| [LangChain Text Splitters](https://python.langchain.com/docs/how_to/recursive_text_splitter/) | Recursive character-based text chunking |
+
+### Containerization & Orchestration
+
+| Tool | Purpose |
+|---|---|
+| [Docker](https://www.docker.com/) | Containerize the application (single image for API + UI) |
+| [Docker Compose](https://docs.docker.com/compose/) | Multi-container local deployment (API, UI, Prometheus, Grafana) |
+| [Kubernetes](https://kubernetes.io/) | Production container orchestration with scaling, health probes, secrets |
+| [kubectl](https://kubernetes.io/docs/reference/kubectl/) | Kubernetes CLI for deployment management |
+
+### Monitoring & Observability
+
+| Tool | Purpose |
+|---|---|
+| [Prometheus](https://prometheus.io/) | Metrics collection, storage & querying (scrapes `/metrics` every 15s) |
+| [Grafana](https://grafana.com/) | Metrics visualization, dashboards & alerting |
+| [prometheus-fastapi-instrumentator](https://github.com/trallnag/prometheus-fastapi-instrumentator) | Auto-instruments FastAPI with Prometheus metrics |
+
+### Language & Runtime
+
+| Tool | Version | Purpose |
+|---|---|---|
+| [Python](https://www.python.org/) | 3.10+ (3.11 in Docker) | Programming language |
+| [pip](https://pip.pypa.io/) | latest | Python package manager |
+
+---
+
+## 📚 References & Resources
+
+### RAG & LangChain
+
+| Resource | Link |
+|---|---|
+| LangChain Documentation | https://python.langchain.com/docs/ |
+| LangChain RAG Tutorial | https://python.langchain.com/docs/tutorials/rag/ |
+| RAG Explained (AWS) | https://aws.amazon.com/what-is/retrieval-augmented-generation/ |
+| FAISS Documentation | https://faiss.ai/ |
+| Sentence-Transformers Docs | https://www.sbert.net/docs/ |
+| all-MiniLM-L6-v2 Model Card | https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2 |
+
+### LLM & Groq
+
+| Resource | Link |
+|---|---|
+| Groq Console (API Keys) | https://console.groq.com/ |
+| Groq API Documentation | https://console.groq.com/docs/quickstart |
+| Llama 3.1 Model Card | https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct |
+| LangChain-Groq Integration | https://python.langchain.com/docs/integrations/chat/groq/ |
+
+### FastAPI & Streamlit
+
+| Resource | Link |
+|---|---|
+| FastAPI Documentation | https://fastapi.tiangolo.com/ |
+| FastAPI Tutorial | https://fastapi.tiangolo.com/tutorial/ |
+| Streamlit Documentation | https://docs.streamlit.io/ |
+| Streamlit Chat Elements | https://docs.streamlit.io/develop/api-reference/chat |
+| Uvicorn Documentation | https://www.uvicorn.org/ |
+
+### Docker & Kubernetes
+
+| Resource | Link |
+|---|---|
+| Docker Get Started | https://docs.docker.com/get-started/ |
+| Dockerfile Reference | https://docs.docker.com/reference/dockerfile/ |
+| Docker Compose Reference | https://docs.docker.com/compose/compose-file/ |
+| Kubernetes Documentation | https://kubernetes.io/docs/home/ |
+| Kubernetes Deployments | https://kubernetes.io/docs/concepts/workloads/controllers/deployment/ |
+| Kubernetes Services | https://kubernetes.io/docs/concepts/services-networking/service/ |
+| Kubernetes Secrets | https://kubernetes.io/docs/concepts/configuration/secret/ |
+| Kubernetes PersistentVolumeClaims | https://kubernetes.io/docs/concepts/storage/persistent-volumes/ |
+| Amazon EKS (Managed K8s) | https://docs.aws.amazon.com/eks/latest/userguide/ |
+| Amazon ECR (Container Registry) | https://docs.aws.amazon.com/ecr/latest/userguide/ |
+
+### Monitoring & Observability
+
+| Resource | Link |
+|---|---|
+| Prometheus Documentation | https://prometheus.io/docs/ |
+| PromQL Basics | https://prometheus.io/docs/prometheus/latest/querying/basics/ |
+| Grafana Documentation | https://grafana.com/docs/grafana/latest/ |
+| Grafana Dashboard Tutorial | https://grafana.com/docs/grafana/latest/getting-started/build-first-dashboard/ |
+| prometheus-fastapi-instrumentator | https://github.com/trallnag/prometheus-fastapi-instrumentator |
+| Amazon CloudWatch (AWS Monitoring) | https://docs.aws.amazon.com/cloudwatch/latest/monitoring/ |
+| Amazon Managed Grafana | https://docs.aws.amazon.com/grafana/latest/userguide/ |
+| Amazon Managed Prometheus | https://docs.aws.amazon.com/prometheus/latest/userguide/ |
+
+### Document Processing
+
+| Resource | Link |
+|---|---|
+| PyPDF Documentation | https://pypdf.readthedocs.io/en/stable/ |
+| python-docx Documentation | https://python-docx.readthedocs.io/en/latest/ |
+| Unstructured Documentation | https://docs.unstructured.io/ |
+| LangChain Document Loaders | https://python.langchain.com/docs/how_to/#document-loaders |
+| LangChain Text Splitters | https://python.langchain.com/docs/how_to/recursive_text_splitter/ |
+
+---
+
 ## 🛠️ Troubleshooting
 
 ### ❌ `ConnectionError: [WinError 10061] No connection could be made`
@@ -635,7 +791,8 @@ If your machine uses a corporate proxy (e.g., McAfee Web Gateway), it may interc
 
 ## 🚀 Quick Start Guide
 
-### Option A: Local (Python)
+Once the application is running (via any deployment method — see [Setup & Installation](#%EF%B8%8F-setup--installation), [Docker](#-docker-deployment), or [Kubernetes](#%EF%B8%8F-kubernetes-deployment) sections above), use it like this:
+
 ```
   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
   │             │     │             │     │             │     │             │     │             │
@@ -646,20 +803,8 @@ If your machine uses a corporate proxy (e.g., McAfee Web Gateway), it may interc
   └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-### Option B: Docker Compose
-```bash
-echo GROQ_API_KEY=<your_key> > .env
-docker-compose up --build
-# UI → http://localhost:8501 | Grafana → http://localhost:3000
-```
-
-### Option C: Kubernetes
-```bash
-kubectl apply -f k8s/namespace.yml
-kubectl apply -f k8s/secret.yml        # edit with your GROQ_API_KEY first
-kubectl apply -f k8s/pvc.yml
-kubectl apply -f k8s/api-deployment.yml
-kubectl apply -f k8s/ui-deployment.yml
-kubectl apply -f k8s/monitoring.yml
-kubectl get svc -n aeromanual           # get external IPs
-```
+1. Open the Streamlit UI in your browser
+2. Upload PDF, DOCX, or TXT documents using the sidebar
+3. Click "Process & Index" to chunk and embed the documents
+4. Ask questions in the chat input
+5. Get AI-generated answers with source references
