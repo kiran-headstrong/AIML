@@ -114,6 +114,10 @@ if question := st.chat_input("Ask something about your documents..."):
                         token = line[6:]  # strip "data: " prefix
                         if token == "[DONE]":
                             break
+                        try:
+                            token = json.loads(token)
+                        except json.JSONDecodeError:
+                            pass
                         full_answer += token
                         placeholder.markdown(full_answer + "▌")
 

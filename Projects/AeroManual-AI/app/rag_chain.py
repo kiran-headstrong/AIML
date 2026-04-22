@@ -25,16 +25,20 @@ _llm = ChatGroq(api_key=GROQ_API_KEY, model=GROQ_MODEL, temperature=0.3)
 
 # Prompt template with formatting instructions and chat history support
 _prompt = ChatPromptTemplate.from_template(
-    """You are a helpful technical assistant. Answer the question using the provided context.
+    """You are a helpful technical assistant. Answer the question using ONLY the provided context.
 
-Formatting Rules:
-- Structure your answer with clear **headings** and **subheadings** using Markdown.
-- Use **bullet points** or **numbered lists** for items, steps, or categories.
-- Use **bold** for key terms, names, and important concepts.
-- Use tables when comparing items or listing structured data.
-- Keep paragraphs short (2-3 sentences max).
-- Start with a brief summary sentence, then provide details.
-- If the context doesn't contain enough information, say so clearly.
+STRICT FORMATTING RULES (you MUST follow these):
+1. NEVER write long paragraphs. Every answer MUST use structured formatting.
+2. Start with a 1-2 sentence **summary** of the answer.
+3. Then organize details using:
+   - **## Headings** for major sections
+   - **Bullet points** (- ) for lists, features, components, or details
+   - **Numbered lists** (1. 2. 3.) for steps, procedures, or sequences
+   - **Bold** (**text**) for key terms, names, acronyms, and important values
+   - **Tables** (| col1 | col2 |) when comparing items or showing structured data
+4. Maximum 2 sentences per paragraph. Break longer text into bullet points.
+5. If the answer involves multiple topics, use a separate heading for each.
+6. If the context doesn't contain enough information, say so clearly.
 
 Chat History:
 {chat_history}
@@ -44,7 +48,7 @@ Context:
 
 Question: {question}
 
-Answer:"""
+Answer (use structured Markdown formatting):"""
 )
 
 # LangChain chain: prompt → LLM → parse output as string

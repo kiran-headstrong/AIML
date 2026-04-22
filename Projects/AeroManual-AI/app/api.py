@@ -18,6 +18,7 @@ Security & Performance:
 
 import asyncio
 import hashlib
+import json
 import logging
 import shutil
 import re
@@ -230,7 +231,7 @@ async def query_stream(request: Request, req: QueryRequest):
     async def generate():
         """Async generator that yields SSE-formatted token chunks."""
         async for token in ask_stream(req.question, req.chat_history):
-            yield f"data: {token}\n\n"
+            yield f"data: {json.dumps(token)}\n\n"
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")

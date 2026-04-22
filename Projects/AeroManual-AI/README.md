@@ -165,8 +165,8 @@ Projects/AeroManual-AI/
 │   ├── config.py ................ Settings & parameters
 │   ├── document_loader.py ....... Load & split documents
 │   ├── vector_store.py .......... FAISS index operations
-│   ├── rag_chain.py ............. RAG chain (retrieval + LLM)
-│   └── api.py ................... FastAPI endpoints + Prometheus metrics
+│   ├── rag_chain.py ............. RAG chain (retrieval + LLM + Markdown formatting)
+│   └── api.py ................... FastAPI endpoints + JSON-encoded SSE streaming
 │
 ├── 📂 k8s/
 │   ├── namespace.yml ............ Kubernetes namespace
@@ -187,7 +187,7 @@ Projects/AeroManual-AI/
 ├── docker-compose.yml ........... Local multi-container setup
 ├── entrypoint.sh ................ Container entrypoint script
 ├── .dockerignore ................ Docker build exclusions
-├── ui.py ........................ Streamlit chat UI
+├── ui.py ........................ Streamlit chat UI (Markdown-rendered streaming)
 ├── requirements.txt ............. Python dependencies
 └── README.md .................... This file
 ```
@@ -218,7 +218,7 @@ All parameters can be overridden via environment variables.
 |---|---|---|---|---|
 | `POST` | `/upload` | File (multipart, max 50MB) | `{filename, chunks_indexed, status}` | 20/min |
 | `POST` | `/query` | `{question, chat_history}` | `{answer, sources}` | 20/min |
-| `POST` | `/query/stream` | `{question, chat_history}` | SSE token stream | 20/min |
+| `POST` | `/query/stream` | `{question, chat_history}` | SSE token stream (JSON-encoded, Markdown-formatted) | 20/min |
 | `GET` | `/health` | — | `{status: "ok"}` | — |
 | `GET` | `/metrics` | — | Prometheus metrics (auto-instrumented) | — |
 
@@ -958,23 +958,33 @@ async def query_documents(req: QueryRequest):
 
 **Problem**: Users wait 2-5 seconds staring at a spinner until the full LLM response is generated.
 
-**Solution**: Use Groq's streaming API + Server-Sent Events (SSE) to show answers token-by-token.
+**Solution**: Use Groq's streaming API + Server-Sent Events (SSE) to show answers token-by-token. Tokens are JSON-encoded to preserve Markdown newlines through the SSE protocol.
 
 ```python
-# API — stream tokens via SSE
+# API — stream JSON-encoded tokens via SSE (preserves Markdown formatting)
+import json
 from fastapi.responses import StreamingResponse
 
 @app.post("/query/stream")
 async def query_stream(req: QueryRequest):
     async def generate():
-        docs = search(req.question)
-        context = "\n\n---\n\n".join(d.page_content for d in docs)
-        async for chunk in _chain.astream({"context": context, "question": req.question}):
-            yield f"data: {chunk}\n\n"
+        async for token in ask_stream(req.question, req.chat_history):
+            yield f"data: {json.dumps(token)}\n\n"  # JSON-encode to preserve \n
+        yield "data: [DONE]\n\n"
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+# UI — decode JSON tokens to restore Markdown newlines
+for line in resp.iter_lines(decode_unicode=True):
+    if line and line.startswith("data: "):
+        token = line[6:]
+        if token == "[DONE]":
+            break
+        token = json.loads(token)  # decode to restore \n characters
+        full_answer += token
+        placeholder.markdown(full_answer + "▌")  # renders Markdown live
 ```
 
-**Impact**: First token appears in ~200ms instead of waiting 2-5s for the full response.
+**Impact**: First token appears in ~200ms instead of waiting 2-5s for the full response. Answers render with proper Markdown formatting (headings, bullets, bold) in real-time.
 
 #### 4. Background Indexing for Uploads
 
