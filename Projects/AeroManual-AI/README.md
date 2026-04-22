@@ -808,3 +808,303 @@ Once the application is running (via any deployment method — see [Setup & Inst
 3. Click "Process & Index" to chunk and embed the documents
 4. Ask questions in the chat input
 5. Get AI-generated answers with source references
+
+---
+
+## ⚠️ Known Gaps & Limitations
+
+### 🔴 Critical
+
+| # | Gap | File | Description |
+|---|---|---|---|
+| 1 | **FAISS index reloaded from disk on every request** | `app/vector_store.py` | `_load_existing()` reads the full FAISS index from disk on every `search()` and `add_documents()` call. This is the single biggest performance bottleneck — every query pays disk I/O cost. |
+| 2 | **Blocking sync operations in async endpoints** | `app/api.py` | Endpoints are declared `async` but call synchronous functions (`load_and_split`, `add_documents`, `ask`) directly. This blocks the event loop — one slow upload/query blocks all other concurrent requests. |
+| 3 | **No file upload validation** | `app/api.py` | The `/upload` endpoint writes files to disk using the original filename with no sanitization. Risks include: **path traversal** (`../../etc/passwd`), **no file size limit** (a 10GB upload crashes the server), and **no content validation** (extension could be `.pdf` but contain malicious content). |
+
+### 🟡 Important
+
+| # | Gap | File | Description |
+|---|---|---|---|
+| 4 | **Race condition on FAISS index** | `app/vector_store.py` | Multiple concurrent uploads both call `add_documents()` which does load → add → save. Two simultaneous uploads can overwrite each other's changes — no file locking or concurrency control. |
+| 5 | **No authentication** | `app/api.py` | The API has zero auth. Anyone with network access can upload documents and query the system. In a K8s deployment with a LoadBalancer, this is publicly exposed. |
+| 6 | **No rate limiting** | `app/api.py` | No protection against abuse. A user could spam `/query` and exhaust the Groq API quota or overload the server. |
+| 7 | **No structured logging** | All files | No logging anywhere. When something fails in production, there's no visibility beyond Prometheus request-level metrics. |
+| 8 | **No CORS configuration** | `app/api.py` | FastAPI app has no CORS middleware. If the UI is ever served from a different domain/origin, API requests will be blocked by the browser. |
+| 9 | **No dependency version pinning** | `requirements.txt` | All packages use `latest` with no version pins. A `pip install` today vs next month could install breaking changes (especially LangChain which changes frequently). |
+
+### 🔵 Functional Gaps
+
+| # | Gap | File | Description |
+|---|---|---|---|
+| 10 | **Hardcoded relevance threshold** | `app/vector_store.py` | The `score < 1.5` filter is a magic number. May filter out relevant results or let irrelevant ones through depending on document type and query. |
+| 11 | **No duplicate document detection** | `app/vector_store.py` | Uploading the same file twice doubles the chunks in the index. No deduplication by filename or content hash. |
+| 12 | **K8s PVC access mode mismatch** | `k8s/pvc.yml` | PVCs use `ReadWriteOnce` but the API deployment has 2 replicas. Only one pod can mount the volume — the second replica will fail to schedule. Should use `ReadWriteMany` or switch to a shared storage backend. |
+| 13 | **No conversation memory** | `app/rag_chain.py` | Each query is independent. The LLM has no awareness of previous questions, so follow-up questions like "tell me more about that" won't work. |
+
+---
+
+## 🚀 Performance Improvement Roadmap
+
+### Current Request Flow (Before Optimization)
+
+```
+  ❓ User Query
+       │
+       ▼
+  ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+  │                 │     │                 │     │                 │     │                 │
+  │  📂 Load FAISS  │────▶│  🔍 Vector      │────▶│  🤖 Wait for    │────▶│  📤 Return      │
+  │  from disk      │     │  Search         │     │  full LLM       │     │  full answer    │
+  │  (SLOW)         │     │                 │     │  response       │     │                 │
+  │                 │     │                 │     │  (SLOW)         │     │                 │
+  └─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+        ~200ms                  ~50ms                  ~2-5s                    ~10ms
+```
+
+### Optimized Request Flow (After Improvements)
+
+```
+  ❓ User Query
+       │
+       ▼
+  ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+  │                 │     │                 │     │                 │     │                 │
+  │  ⚡ In-memory   │────▶│  🔍 Vector      │────▶│  🤖 Stream LLM  │────▶│  📤 Stream      │
+  │  FAISS lookup   │     │  Search +       │     │  tokens via     │     │  tokens to      │
+  │  (FAST)         │     │  Reranker       │     │  SSE            │     │  user live      │
+  │                 │     │  (BETTER)       │     │  (FAST UX)      │     │  (FAST UX)      │
+  └─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+        ~1ms                   ~100ms                  ~2-5s                  immediate
+                                                  (first token ~200ms)
+```
+
+### 🔴 High Impact Improvements
+
+#### 1. Cache FAISS Index in Memory
+
+**Problem**: `vector_store.py` calls `FAISS.load_local()` on every single request — reading the entire index from disk each time.
+
+**Solution**: Load the index once into a module-level variable and only reload after new documents are added.
+
+```python
+# Before (current) — disk I/O on every request
+def search(query, k=TOP_K):
+    store = _load_existing()  # reads from disk every time
+    results = store.similarity_search_with_score(query, k=k)
+    ...
+
+# After (optimized) — in-memory cache
+_store_cache = None
+
+def _get_store():
+    global _store_cache
+    if _store_cache is None:
+        _store_cache = FAISS.load_local(_index_path, _embeddings, ...)
+    return _store_cache
+
+def add_documents(docs):
+    global _store_cache
+    store = _get_store() or FAISS.from_documents(docs, _embeddings)
+    store.add_documents(docs)
+    store.save_local(_index_path)
+    _store_cache = store  # update cache
+    return len(docs)
+```
+
+**Impact**: ~200ms → ~1ms per query (eliminates disk I/O).
+
+#### 2. Run Sync Work in Thread Pool
+
+**Problem**: `async` endpoints call blocking functions directly, freezing the event loop.
+
+**Solution**: Use `asyncio.to_thread()` to offload CPU/IO-bound work.
+
+```python
+# Before (current) — blocks event loop
+@app.post("/query")
+async def query_documents(req: QueryRequest):
+    return ask(req.question)  # blocks all other requests
+
+# After (optimized) — runs in thread pool
+import asyncio
+
+@app.post("/query")
+async def query_documents(req: QueryRequest):
+    return await asyncio.to_thread(ask, req.question)
+```
+
+**Impact**: Concurrent requests no longer queue behind slow operations.
+
+#### 3. Stream LLM Responses
+
+**Problem**: Users wait 2-5 seconds staring at a spinner until the full LLM response is generated.
+
+**Solution**: Use Groq's streaming API + Server-Sent Events (SSE) to show answers token-by-token.
+
+```python
+# API — stream tokens via SSE
+from fastapi.responses import StreamingResponse
+
+@app.post("/query/stream")
+async def query_stream(req: QueryRequest):
+    async def generate():
+        docs = search(req.question)
+        context = "\n\n---\n\n".join(d.page_content for d in docs)
+        async for chunk in _chain.astream({"context": context, "question": req.question}):
+            yield f"data: {chunk}\n\n"
+    return StreamingResponse(generate(), media_type="text/event-stream")
+```
+
+**Impact**: First token appears in ~200ms instead of waiting 2-5s for the full response.
+
+#### 4. Background Indexing for Uploads
+
+**Problem**: Users wait for the entire chunking + embedding process during upload.
+
+**Solution**: Return immediately after file save, index in background.
+
+```python
+from fastapi import BackgroundTasks
+
+@app.post("/upload")
+async def upload_document(file: UploadFile, background_tasks: BackgroundTasks):
+    dest = UPLOAD_DIR / file.filename
+    with open(dest, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    background_tasks.add_task(process_and_index, str(dest))
+    return {"filename": file.filename, "status": "processing"}
+```
+
+**Impact**: Upload response time drops from seconds to milliseconds.
+
+### 🟡 Medium Impact Improvements
+
+#### 5. Add a Reranker After Retrieval
+
+**Problem**: FAISS returns top-K by vector distance, but vector similarity doesn't always equal semantic relevance.
+
+**Solution**: Add a cross-encoder reranker to reorder results by actual relevance before sending to the LLM.
+
+```python
+# pip install sentence-transformers
+from sentence_transformers import CrossEncoder
+
+reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+
+def search_with_rerank(query, k=TOP_K):
+    candidates = store.similarity_search(query, k=k * 2)  # fetch 2x candidates
+    pairs = [(query, doc.page_content) for doc in candidates]
+    scores = reranker.predict(pairs)
+    ranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
+    return [doc for doc, score in ranked[:k]]
+```
+
+**Impact**: Significantly better answer quality — the LLM gets more relevant context.
+
+#### 6. Increase Chunk Size
+
+**Problem**: Current `CHUNK_SIZE=500` characters is quite small — chunks often cut mid-sentence, losing context.
+
+**Solution**: Increase to 1000 chars with 200 overlap.
+
+```python
+# config.py
+CHUNK_SIZE = 1000    # was 500
+CHUNK_OVERLAP = 200  # was 100
+```
+
+**Impact**: Fewer chunks with more complete context → better LLM answers.
+
+#### 7. Add Conversation Memory
+
+**Problem**: Each query is independent — the LLM has no awareness of previous questions. Follow-up questions like "tell me more" or "what about section 3?" don't work.
+
+**Solution**: Pass chat history in the prompt.
+
+```python
+_prompt = ChatPromptTemplate.from_template(
+    """You are a helpful assistant. Use the context and chat history to answer.
+
+Chat History:
+{chat_history}
+
+Context:
+{context}
+
+Question: {question}
+
+Answer:"""
+)
+```
+
+**Impact**: Enables natural multi-turn conversations.
+
+#### 8. Batch Embedding During Upload
+
+**Problem**: During document upload, chunks are embedded one-by-one by default.
+
+**Solution**: LangChain's `FAISS.from_documents()` already batches internally, but for `add_documents()` on an existing store, ensure batch size is configured:
+
+```python
+_embeddings = HuggingFaceEmbeddings(
+    model_name=EMBEDDING_MODEL,
+    encode_kwargs={"batch_size": 64}  # embed 64 chunks at once
+)
+```
+
+**Impact**: 2-5x faster document indexing for large files.
+
+### 🟢 Nice-to-Have Improvements
+
+#### 9. Switch to FAISS GPU
+
+Replace `faiss-cpu` with `faiss-gpu` in `requirements.txt` if a GPU is available. Vector search becomes ~10-100x faster for large indexes (100K+ chunks).
+
+#### 10. Add Query Caching
+
+Cache repeated queries with an LRU cache or Redis to avoid redundant Groq API calls:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=256)
+def ask_cached(question: str) -> dict:
+    return ask(question)
+```
+
+**Impact**: Instant responses for repeated questions, saves Groq API quota.
+
+#### 11. Upgrade Embedding Model
+
+Replace `all-MiniLM-L6-v2` (384-dim) with `all-mpnet-base-v2` (768-dim) for better retrieval accuracy at the cost of slightly more compute and memory:
+
+```python
+# config.py
+EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"  # was all-MiniLM-L6-v2
+```
+
+**Impact**: Better semantic matching → more relevant chunks → better answers.
+
+### Improvement Priority Matrix
+
+```
+                        IMPACT
+              Low            Medium           High
+         ┌──────────────┬──────────────┬──────────────┐
+  Easy   │              │  #6 Chunk    │  #1 FAISS    │
+         │              │     Size     │     Cache    │
+         │              │  #8 Batch    │  #2 Thread   │
+         │              │     Embed    │     Pool     │
+         ├──────────────┼──────────────┼──────────────┤
+EFFORT   │  #9 FAISS    │  #7 Chat     │  #3 Stream   │
+  Medium │     GPU      │     Memory   │     LLM      │
+         │  #11 Embed   │  #5 Reranker │  #4 Bg Index │
+         │     Model    │              │              │
+         ├──────────────┼──────────────┼──────────────┤
+  Hard   │              │  #10 Query   │              │
+         │              │     Cache    │              │
+         │              │              │              │
+         └──────────────┴──────────────┴──────────────┘
+
+  ✅ Start here: #1 → #2 → #3 (biggest bang for least effort)
+```
