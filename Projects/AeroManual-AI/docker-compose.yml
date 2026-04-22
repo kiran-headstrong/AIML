@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    environment:
+      - SERVICE=api
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads:/app/uploads
+      - vectorstore:/app/vectorstore
+
+  ui:
+    build: .
+    environment:
+      - SERVICE=ui
+      - API_URL=http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  uploads:
+  vectorstore:

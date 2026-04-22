@@ -164,11 +164,27 @@ Projects/AeroManual-AI/
 │   ├── document_loader.py ....... Load & split documents
 │   ├── vector_store.py .......... FAISS index operations
 │   ├── rag_chain.py ............. RAG chain (retrieval + LLM)
-│   └── api.py ................... FastAPI endpoints
+│   └── api.py ................... FastAPI endpoints + Prometheus metrics
+│
+├── 📂 k8s/
+│   ├── namespace.yml ............ Kubernetes namespace
+│   ├── secret.yml ............... GROQ_API_KEY secret
+│   ├── pvc.yml .................. Persistent volume claims
+│   ├── api-deployment.yml ....... API deployment & service
+│   ├── ui-deployment.yml ........ UI deployment & service
+│   └── monitoring.yml ........... Prometheus + Grafana stack
+│
+├── 📂 monitoring/
+│   ├── prometheus.yml ........... Prometheus scrape config
+│   └── grafana-datasource.yml ... Grafana datasource provisioning
 │
 ├── 📂 uploads/ .................. Uploaded documents
 ├── 📂 vectorstore/ .............. Persisted FAISS index
 │
+├── Dockerfile ................... Container image (API + UI)
+├── docker-compose.yml ........... Local multi-container setup
+├── entrypoint.sh ................ Container entrypoint script
+├── .dockerignore ................ Docker build exclusions
 ├── ui.py ........................ Streamlit chat UI
 ├── requirements.txt ............. Python dependencies
 └── README.md .................... This file
@@ -195,6 +211,7 @@ Projects/AeroManual-AI/
 | `POST` | `/upload` | File (multipart) | `{filename, chunks_indexed}` |
 | `POST` | `/query` | `{question: string}` | `{answer, sources}` |
 | `GET` | `/health` | — | `{status: "ok"}` |
+| `GET` | `/metrics` | — | Prometheus metrics (auto-instrumented) |
 
 ---
 
@@ -236,6 +253,304 @@ streamlit run ui.py
 
 ### 4. Open the App
 Navigate to **http://localhost:8501** in your browser.
+
+---
+
+## 🐳 Docker Deployment
+
+### Deployment Architecture (Docker Compose)
+
+```
+ ┌──────────────────────────────────────────────────────────────────┐
+ │                     Docker Compose Network                       │
+ │                                                                  │
+ │  ┌──────────────┐       ┌──────────────┐                        │
+ │  │  🖥️ UI        │──────▶│  ⚡ API       │──── /metrics ──┐      │
+ │  │  Streamlit   │       │  FastAPI     │                │      │
+ │  │  :8501       │       │  :8000       │                │      │
+ │  └──────────────┘       └──────┬───────┘                │      │
+ │                                │                        │      │
+ │                         ┌──────┴───────┐                │      │
+ │                         │  📦 Volumes   │                │      │
+ │                         │  uploads/     │                │      │
+ │                         │  vectorstore/ │                │      │
+ │                         └──────────────┘                │      │
+ │                                                         │      │
+ │  ┌──────────────┐       ┌──────────────┐                │      │
+ │  │  📊 Grafana   │◀──────│  📈 Prometheus│◀───────────────┘      │
+ │  │  :3000       │       │  :9090       │                        │
+ │  └──────────────┘       └──────────────┘                        │
+ └──────────────────────────────────────────────────────────────────┘
+```
+
+### Container Image
+
+A single `Dockerfile` builds one image that runs either the API or the UI, controlled by the `SERVICE` environment variable:
+
+| `SERVICE` value | What starts | Port |
+|---|---|---|
+| `api` | FastAPI (uvicorn) | 8000 |
+| `ui` | Streamlit | 8501 |
+
+### Build & Run with Docker Compose
+
+```bash
+cd Projects/AeroManual-AI
+
+# 1. Create .env file with your API key
+echo GROQ_API_KEY=<your_groq_api_key> > .env
+
+# 2. Build and start all services
+docker-compose up --build
+```
+
+This starts 4 containers:
+
+| Service | URL | Description |
+|---|---|---|
+| API | http://localhost:8000 | FastAPI backend + `/metrics` endpoint |
+| UI | http://localhost:8501 | Streamlit chat interface |
+| Prometheus | http://localhost:9090 | Metrics collection & querying |
+| Grafana | http://localhost:3000 | Dashboards & visualization (admin/admin) |
+
+### Useful Docker Commands
+
+```bash
+# Build image only
+docker build -t aeromanual-ai:latest .
+
+# Run API container standalone
+docker run -e SERVICE=api -e GROQ_API_KEY=<your_key> -p 8000:8000 aeromanual-ai:latest
+
+# Run UI container standalone
+docker run -e SERVICE=ui -e API_URL=http://host.docker.internal:8000 -p 8501:8501 aeromanual-ai:latest
+
+# Stop all compose services
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up --build -d
+```
+
+---
+
+## ☸️ Kubernetes Deployment
+
+### Kubernetes Architecture
+
+```
+ ┌─────────────────────────────────────────────────────────────────────────┐
+ │                  Kubernetes Cluster (namespace: aeromanual)             │
+ │                                                                         │
+ │  ┌─────────────────────┐         ┌─────────────────────────┐           │
+ │  │  🖥️ UI Deployment    │         │  ⚡ API Deployment       │           │
+ │  │  (1 replica)        │────────▶│  (2 replicas)           │           │
+ │  │                     │         │                         │           │
+ │  │  Service: LB :80    │         │  Service: ClusterIP     │           │
+ │  │  → :8501            │         │  :8000                  │           │
+ │  └─────────────────────┘         └────────────┬────────────┘           │
+ │                                               │                        │
+ │                                        ┌──────┴──────┐                 │
+ │                                        │  📦 PVCs     │                 │
+ │                                        │  uploads     │                 │
+ │                                        │  vectorstore │                 │
+ │                                        └─────────────┘                 │
+ │                                               │                        │
+ │                                          /metrics                      │
+ │                                               │                        │
+ │  ┌─────────────────────┐         ┌────────────┴────────────┐           │
+ │  │  📊 Grafana          │◀────────│  📈 Prometheus           │           │
+ │  │  Service: LB :3000  │         │  Service: ClusterIP     │           │
+ │  │  (admin/admin)      │         │  :9090                  │           │
+ │  └─────────────────────┘         └─────────────────────────┘           │
+ │                                                                         │
+ │  ┌─────────────────────┐                                               │
+ │  │  🔐 Secret           │                                               │
+ │  │  GROQ_API_KEY       │                                               │
+ │  └─────────────────────┘                                               │
+ └─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Prerequisites
+
+- Docker installed
+- `kubectl` configured with access to a Kubernetes cluster
+- A container registry (Docker Hub, Amazon ECR, etc.)
+
+### Step 1: Build & Push the Container Image
+
+```bash
+cd Projects/AeroManual-AI
+
+# Build
+docker build -t aeromanual-ai:latest .
+
+# Tag for your registry
+docker tag aeromanual-ai:latest <your-registry>/aeromanual-ai:latest
+
+# Push
+docker push <your-registry>/aeromanual-ai:latest
+```
+
+> 💡 If using Amazon ECR:
+> ```bash
+> aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
+> docker tag aeromanual-ai:latest <account-id>.dkr.ecr.<region>.amazonaws.com/aeromanual-ai:latest
+> docker push <account-id>.dkr.ecr.<region>.amazonaws.com/aeromanual-ai:latest
+> ```
+
+### Step 2: Update Image References
+
+Edit `k8s/api-deployment.yml` and `k8s/ui-deployment.yml` — replace `image: aeromanual-ai:latest` with your full registry path:
+
+```yaml
+image: <your-registry>/aeromanual-ai:latest
+```
+
+### Step 3: Configure the Secret
+
+Edit `k8s/secret.yml` and replace the placeholder with your actual Groq API key:
+
+```yaml
+stringData:
+  GROQ_API_KEY: "<your_actual_groq_api_key>"
+```
+
+### Step 4: Deploy to Kubernetes
+
+```bash
+# Create namespace
+kubectl apply -f k8s/namespace.yml
+
+# Create secret (contains GROQ_API_KEY)
+kubectl apply -f k8s/secret.yml
+
+# Create persistent volume claims for uploads & vectorstore
+kubectl apply -f k8s/pvc.yml
+
+# Deploy API (2 replicas with health probes)
+kubectl apply -f k8s/api-deployment.yml
+
+# Deploy UI (Streamlit frontend)
+kubectl apply -f k8s/ui-deployment.yml
+
+# Deploy monitoring stack (Prometheus + Grafana)
+kubectl apply -f k8s/monitoring.yml
+```
+
+### Step 5: Verify Deployment
+
+```bash
+# Check all resources
+kubectl get all -n aeromanual
+
+# Check pod status
+kubectl get pods -n aeromanual
+
+# View API logs
+kubectl logs -l app=aeromanual-api -n aeromanual
+
+# View UI logs
+kubectl logs -l app=aeromanual-ui -n aeromanual
+```
+
+### Step 6: Access the Application
+
+```bash
+# Get external IPs for LoadBalancer services
+kubectl get svc -n aeromanual
+```
+
+| Service | Access |
+|---|---|
+| UI | `http://<UI-EXTERNAL-IP>` (port 80) |
+| Grafana | `http://<GRAFANA-EXTERNAL-IP>:3000` (admin/admin) |
+| API (internal) | `http://aeromanual-api:8000` (cluster-internal only) |
+| Prometheus (internal) | `http://prometheus:9090` (cluster-internal only) |
+
+### Kubernetes Manifest Summary
+
+| File | Resources Created |
+|---|---|
+| `k8s/namespace.yml` | `aeromanual` namespace |
+| `k8s/secret.yml` | Secret with `GROQ_API_KEY` |
+| `k8s/pvc.yml` | 2 PVCs — `uploads-pvc` (2Gi), `vectorstore-pvc` (2Gi) |
+| `k8s/api-deployment.yml` | Deployment (2 replicas, liveness/readiness probes) + ClusterIP Service |
+| `k8s/ui-deployment.yml` | Deployment (1 replica) + LoadBalancer Service |
+| `k8s/monitoring.yml` | Prometheus Deployment + ConfigMap + Grafana Deployment + ConfigMap + Services |
+
+### API Pod Configuration
+
+| Setting | Value |
+|---|---|
+| Replicas | 2 |
+| CPU request / limit | 250m / 1 core |
+| Memory request / limit | 512Mi / 2Gi |
+| Liveness probe | `GET /health` every 30s |
+| Readiness probe | `GET /health` every 10s |
+| Prometheus annotations | Auto-scrape on `:8000/metrics` |
+
+---
+
+## 📊 Monitoring with Prometheus & Grafana
+
+### How It Works
+
+```
+  ⚡ FastAPI API                    📈 Prometheus                  📊 Grafana
+ ┌──────────────┐               ┌──────────────────┐          ┌──────────────────┐
+ │              │   GET /metrics │                  │  PromQL  │                  │
+ │  Handles     │◀──────────────│  Scrapes metrics │◀─────────│  Visualizes      │
+ │  requests    │──────────────▶│  every 15s       │─────────▶│  dashboards      │
+ │              │   JSON metrics│                  │  query   │                  │
+ │  Exposes:    │               │  Stores time     │  results │  Pre-configured  │
+ │  /metrics    │               │  series data     │          │  Prometheus      │
+ │              │               │                  │          │  datasource      │
+ └──────────────┘               └──────────────────┘          └──────────────────┘
+```
+
+The `prometheus-fastapi-instrumentator` library automatically instruments the FastAPI app and exposes metrics at the `/metrics` endpoint.
+
+### Metrics Exposed
+
+| Metric | Type | Description |
+|---|---|---|
+| `http_requests_total` | Counter | Total HTTP requests by method, status, path |
+| `http_request_duration_seconds` | Histogram | Request latency distribution |
+| `http_requests_in_progress` | Gauge | Currently active requests |
+| `http_request_size_bytes` | Summary | Request body sizes |
+| `http_response_size_bytes` | Summary | Response body sizes |
+
+### Grafana Dashboard Setup
+
+1. Open Grafana at `http://localhost:3000` (Docker) or `http://<GRAFANA-EXTERNAL-IP>:3000` (K8s)
+2. Login with `admin` / `admin`
+3. Prometheus datasource is auto-provisioned — no manual setup needed
+4. Create a new dashboard and add panels with these PromQL queries:
+
+| Panel | PromQL Query |
+|---|---|
+| Request Rate | `rate(http_requests_total[5m])` |
+| Response Latency (p95) | `histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))` |
+| Error Rate (5xx) | `rate(http_requests_total{status=~"5.."}[5m])` |
+| Active Requests | `http_requests_in_progress` |
+| Request Duration Avg | `rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])` |
+| Upload Endpoint Latency | `histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{handler="/upload"}[5m]))` |
+| Query Endpoint Latency | `histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{handler="/query"}[5m]))` |
+
+### Verify Metrics Are Working
+
+```bash
+# Docker Compose — check metrics endpoint
+curl http://localhost:8000/metrics
+
+# Kubernetes — port-forward to check
+kubectl port-forward svc/aeromanual-api 8000:8000 -n aeromanual
+curl http://localhost:8000/metrics
+
+# Check Prometheus targets
+# Open http://localhost:9090/targets — should show aeromanual-api as UP
+```
 
 ---
 
@@ -320,6 +635,7 @@ If your machine uses a corporate proxy (e.g., McAfee Web Gateway), it may interc
 
 ## 🚀 Quick Start Guide
 
+### Option A: Local (Python)
 ```
   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
   │             │     │             │     │             │     │             │     │             │
@@ -328,4 +644,22 @@ If your machine uses a corporate proxy (e.g., McAfee Web Gateway), it may interc
   │  :8501      │     │  (sidebar)  │     │  (click)    │     │  (chat)     │     │  + Sources  │
   │             │     │             │     │             │     │             │     │             │
   └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### Option B: Docker Compose
+```bash
+echo GROQ_API_KEY=<your_key> > .env
+docker-compose up --build
+# UI → http://localhost:8501 | Grafana → http://localhost:3000
+```
+
+### Option C: Kubernetes
+```bash
+kubectl apply -f k8s/namespace.yml
+kubectl apply -f k8s/secret.yml        # edit with your GROQ_API_KEY first
+kubectl apply -f k8s/pvc.yml
+kubectl apply -f k8s/api-deployment.yml
+kubectl apply -f k8s/ui-deployment.yml
+kubectl apply -f k8s/monitoring.yml
+kubectl get svc -n aeromanual           # get external IPs
 ```

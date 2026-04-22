@@ -6,7 +6,10 @@ from app.document_loader import load_and_split
 from app.vector_store import add_documents
 from app.rag_chain import ask
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 app = FastAPI(title="AeroManual AI")
+Instrumentator().instrument(app).expose(app)
 
 
 class QueryRequest(BaseModel):

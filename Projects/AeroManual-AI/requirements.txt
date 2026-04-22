@@ -13,3 +13,4 @@ unstructured
 python-dotenv
 streamlit
 requests
+prometheus-fastapi-instrumentator
