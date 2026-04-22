@@ -1,0 +1,12 @@
+notebook
+numpy
+pandas
+scipy
+matplotlib
+statsmodels
+plotly
+scikit-learn
+tensorflow
+keras
+pydataset
+torch

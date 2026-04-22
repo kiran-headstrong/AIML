@@ -1,0 +1,36 @@
+version: '3.8'
+# Version 3.8 is one of the latest versions in the "v3" series, and is supported by Docker Compose and Docker's built-in Compose (since Docker 18.06.0+).
+# It tells Docker Compose which features and syntax are available in the file.
+
+services:
+  # Flask web application
+  web:
+    build: .  # Build from Dockerfile in this directory
+    ports:
+      - "5000:5000"  # Map host port 5000 to container port 5000
+    environment:
+      # Connection string for SQLAlchemy to connect to Postgres
+      DATABASE_URL: "postgresql://postgres:mysecret@db:5432/postgres"
+    depends_on:
+      # Wait for the db service to be healthy before starting web
+      db:
+        condition: service_healthy
+
+  # PostgreSQL database
+  db:
+    image: postgres:14  # Use official Postgres 14 image
+    environment:
+      POSTGRES_PASSWORD: mysecret  # Set the database password
+    volumes:
+      # Persist database data in a named volume
+      - todo-db-data:/var/lib/postgresql/data
+    healthcheck:
+      # Healthcheck to ensure Postgres is ready to accept connections
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# Named volume for persistent database storage
+volumes:
+  todo-db-data:

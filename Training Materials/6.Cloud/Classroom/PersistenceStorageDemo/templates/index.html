@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text File Storage</title>
+</head>
+<body>
+    <h1>Upload a Text File</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".txt">
+        <button type="submit">Upload</button>
+    </form>
+    <h2>Available Files</h2>
+    <ul>
+        {% for file in files %}
+            <li><a href="{{ url_for('get_file', filename=file) }}">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
