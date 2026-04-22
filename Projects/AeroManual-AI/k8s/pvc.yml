@@ -4,7 +4,7 @@ metadata:
   name: uploads-pvc
   namespace: aeromanual
 spec:
-  accessModes: [ReadWriteOnce]
+  accessModes: [ReadWriteMany]
   resources:
     requests:
       storage: 2Gi
@@ -15,7 +15,7 @@ metadata:
   name: vectorstore-pvc
   namespace: aeromanual
 spec:
-  accessModes: [ReadWriteOnce]
+  accessModes: [ReadWriteMany]
   resources:
     requests:
       storage: 2Gi
