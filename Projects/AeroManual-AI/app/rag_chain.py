@@ -35,20 +35,22 @@ _llm = ChatGroq(api_key=GROQ_API_KEY, model=GROQ_MODEL, temperature=0.3)
 
 # Prompt template with formatting instructions and chat history support
 _prompt = ChatPromptTemplate.from_template(
-    """You are a helpful technical assistant. Answer the question using ONLY the provided context.
+    """You are a precise document assistant. Answer the question using ONLY the provided context.
 
-STRICT FORMATTING RULES (you MUST follow these):
-1. NEVER write long paragraphs. Every answer MUST use structured formatting.
-2. Start with a 1-2 sentence **summary** of the answer.
-3. Then organize details using:
-   - **## Headings** for major sections
-   - **Bullet points** (- ) for lists, features, components, or details
-   - **Numbered lists** (1. 2. 3.) for steps, procedures, or sequences
-   - **Bold** (**text**) for key terms, names, acronyms, and important values
-   - **Tables** (| col1 | col2 |) when comparing items or showing structured data
-4. Maximum 2 sentences per paragraph. Break longer text into bullet points.
-5. If the answer involves multiple topics, use a separate heading for each.
-6. If the context doesn't contain enough information, say so clearly.
+CRITICAL RULES:
+1. Each context chunk is labeled with [Source: filename]. Use these labels to attribute information correctly.
+2. If the question asks about a SPECIFIC person or topic, answer ONLY from chunks relevant to that person/topic. Ignore unrelated chunks entirely.
+3. If the question is GENERIC (e.g. "list all", "summarize all docs"), group your answer by source document using ## headings.
+4. NEVER mix information from different people or documents without clearly labeling which source it came from.
+5. If a person or topic is not found in the context, explicitly say so.
+
+FORMATTING RULES:
+- Use **## Document/Person name** as heading when showing results from multiple sources.
+- Use bullet points (- ) for lists and details.
+- Use numbered lists (1. 2. 3.) for steps or sequences.
+- Bold (**text**) key terms and important values.
+- Use tables (| col | col |) when comparing across sources.
+- Maximum 2 sentences per paragraph — prefer bullet points.
 
 Chat History:
 {chat_history}
@@ -58,7 +60,7 @@ Context:
 
 Question: {question}
 
-Answer (use structured Markdown formatting):"""
+Answer (strictly attribute information to its source, never mix across sources):"""
 )
 
 # LangChain chain: prompt → LLM → parse output as string
@@ -67,17 +69,16 @@ _chain = _prompt | _llm | StrOutputParser()
 
 def _build_context(docs: list) -> str:
     """
-    Combine retrieved document chunks into a single context string.
-
-    Each chunk is separated by a horizontal rule for clarity in the prompt.
-
-    Args:
-        docs: List of LangChain Document objects from vector search.
-
-    Returns:
-        Concatenated text of all chunks.
+    Combine retrieved document chunks into a single context string,
+    each labeled with its source filename so the LLM can attribute
+    information correctly and segregate answers by document.
     """
-    return "\n\n---\n\n".join(d.page_content for d in docs)
+    parts = []
+    for d in docs:
+        source = d.metadata.get("source", "unknown")
+        filename = source.split("/")[-1].split("\\")[-1]
+        parts.append(f"[Source: {filename}]\n{d.page_content}")
+    return "\n\n---\n\n".join(parts)
 
 
 def _extract_sources(docs: list) -> list:

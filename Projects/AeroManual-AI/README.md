@@ -28,6 +28,21 @@ An intelligent document Q&A application powered by Retrieval-Augmented Generatio
 
 ---
 
+## 🔒 Security Hardening
+
+The following security fixes have been applied across the codebase:
+
+| Issue | File | Fix Applied |
+|---|---|---|
+| **Log Injection** (CWE-117) | `api.py` | `_sanitize_log()` strips `\r\n\t` from all user inputs before logging |
+| **Path Traversal** (CWE-22) | `api.py`, `document_loader.py` | `Path.resolve()` + `startswith(UPLOAD_DIR)` confinement check on all file paths |
+| **Unrestricted File Upload** (CWE-434) | `api.py` | Magic-byte validation verifies file content matches declared extension (PDF=`%PDF`, DOCX=`PK\x03\x04`) |
+| **Input Sanitization** (CWE-943) | `rag_chain.py` | `_sanitize_input()` strips control characters and enforces max length on question/chat_history |
+| **Dangerous Global Variables** | `vector_store.py` | Replaced `_store_cache`, `_lock`, `_indexed_files` globals with `_VectorStoreState` class |
+| **Unsafe Stream Output** | `rag_chain.py` | `isinstance(chunk, str)` check before yielding SSE tokens |
+
+---
+
 ## 🔄 How It Works — The Two Main Flows
 
 ### 📤 Flow 1: Document Upload & Indexing
@@ -286,18 +301,26 @@ LOG_LEVEL=INFO
 
 ### 4. Run the Application
 
+**Option A — One-click (double-click `run.bat`):**
+```
+Projects/AeroManual-AI/run.bat
+```
+This starts both the API and UI automatically using the `.venv` environment.
+
+**Option B — Manual terminals:**
+
 **Terminal 1 — API server:**
 ```bash
 cd Projects/AeroManual-AI
 set NO_PROXY=localhost,127.0.0.1
-uvicorn app.api:app --reload --host 127.0.0.1 --port 8000
+..\..\..venv\Scripts\uvicorn.exe app.api:app --host 127.0.0.1 --port 8000
 ```
 
 **Terminal 2 — Streamlit UI:**
 ```bash
 cd Projects/AeroManual-AI
 set NO_PROXY=localhost,127.0.0.1
-streamlit run ui.py
+..\..\..venv\Scripts\streamlit.exe run ui.py
 ```
 
 > ⚠️ The `NO_PROXY` and `--host 127.0.0.1` flags are required on corporate networks to bypass proxy interception of localhost traffic.
@@ -1077,29 +1100,23 @@ CHUNK_OVERLAP = 200  # was 100
 
 **Impact**: Fewer chunks with more complete context → better LLM answers.
 
-#### 7. Add Conversation Memory
+#### 7. Add Conversation Memory & Source-Segregated Answers ✅ Implemented
 
-**Problem**: Each query is independent — the LLM has no awareness of previous questions. Follow-up questions like "tell me more" or "what about section 3?" don't work.
+**Problem**: Each query is independent — the LLM has no awareness of previous questions. Also, when multiple documents are indexed, answers mix content from different sources without attribution.
 
-**Solution**: Pass chat history in the prompt.
+**Solution**: Chat history is passed in the prompt, and each context chunk is labeled with its source filename so the LLM attributes answers correctly.
 
 ```python
-_prompt = ChatPromptTemplate.from_template(
-    """You are a helpful assistant. Use the context and chat history to answer.
-
-Chat History:
-{chat_history}
-
-Context:
-{context}
-
-Question: {question}
-
-Answer:"""
-)
+# Each chunk labeled with source
+def _build_context(docs):
+    parts = []
+    for d in docs:
+        filename = d.metadata.get("source", "unknown").split("\\")[-1]
+        parts.append(f"[Source: {filename}]\n{d.page_content}")
+    return "\n\n---\n\n".join(parts)
 ```
 
-**Impact**: Enables natural multi-turn conversations.
+**Impact**: Specific queries (e.g. "tell me about Abhilasha") return only that person's data. Generic queries group results by document with `## headings`.
 
 #### 8. Batch Embedding During Upload
 
