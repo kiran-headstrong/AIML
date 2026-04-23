@@ -330,6 +330,18 @@ Navigate to **http://localhost:8501** in your browser.
 
 ---
 
+## 🐛 Bug Fixes & Docker Hardening
+
+The following fixes were applied to resolve Docker build and runtime issues:
+
+| Issue | File | Fix Applied |
+|---|---|---|
+| **IndexError on `.env` lookup** | `app/config.py` | Replaced hardcoded `parents[3]` with a loop that walks up the directory tree — works in both local dev and Docker (`/app/app/config.py` only has 2 parents) |
+| **pip download timeout** | `Dockerfile` | Added `--timeout=300 --retries=5` to `pip install` to handle corporate proxy throttling on `files.pythonhosted.org` |
+| **UI connects before API is ready** | `docker-compose.yml` | Added `healthcheck` on the `api` service (polls `/health` every 10s) and changed `ui` `depends_on` to `condition: service_healthy` so the UI waits until the API is fully up |
+
+---
+
 ## 🐳 Docker Deployment
 
 ### Deployment Architecture (Docker Compose)

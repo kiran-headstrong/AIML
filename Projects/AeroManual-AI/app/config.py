@@ -14,9 +14,12 @@ from dotenv import load_dotenv
 # ---------------------------------------------------------------------------
 # Environment: load .env for local development; containers inject env vars
 # ---------------------------------------------------------------------------
-env_path = Path(__file__).resolve().parents[3] / ".env"
-if env_path.exists():
-    load_dotenv(env_path)
+# Walk up from current file looking for .env (works for both local dev and Docker)
+for _parent in Path(__file__).resolve().parents:
+    _env = _parent / ".env"
+    if _env.exists():
+        load_dotenv(_env)
+        break
 
 # ---------------------------------------------------------------------------
 # Logging: structured JSON-style logging across all modules

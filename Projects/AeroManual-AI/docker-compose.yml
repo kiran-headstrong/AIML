@@ -11,6 +11,12 @@ services:
     volumes:
       - uploads:/app/uploads
       - vectorstore:/app/vectorstore
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   ui:
     build: .
@@ -20,7 +26,8 @@ services:
     ports:
       - "8501:8501"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
   prometheus:
     image: prom/prometheus:latest
