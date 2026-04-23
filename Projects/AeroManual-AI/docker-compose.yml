@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   api:
-    build: .
+    image: aeromanual-ai:latest
     environment:
       - SERVICE=api
       - GROQ_API_KEY=${GROQ_API_KEY}
@@ -19,7 +19,7 @@ services:
       start_period: 30s
 
   ui:
-    build: .
+    image: aeromanual-ai:latest
     environment:
       - SERVICE=ui
       - API_URL=http://api:8000
