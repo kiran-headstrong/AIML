@@ -1,0 +1,1 @@
+run_id,datetime,model,embedding_model,vector_store,chunk_size,top_k,question_id,predicted_route,route_confidence,answer_has_citation,citations_used,answer_quality_notes

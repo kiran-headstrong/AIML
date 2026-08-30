@@ -1,0 +1,31 @@
+# AI Training Assistant - Dependencies
+#
+# groq              - LLM inference API client (Groq cloud)
+# python-dotenv     - Load API keys from .env file
+# gradio            - Web UI for the chatbot
+# numpy             - Vector similarity computations
+# onnxruntime       - Fast local model inference (no PyTorch needed)
+# tokenizers        - HuggingFace tokenizer for embedding model
+# huggingface-hub   - Download embedding model files
+# requests          - HTTP client (used by huggingface-hub)
+# pymupdf           - PDF text extraction
+# python-docx       - Word document text extraction
+# python-pptx       - PowerPoint text extraction
+# chromadb          - Local persistent vector database (real vector DB backend)
+# bcrypt            - Secure password hashing for local auth (SSO stand-in)
+# pandas            - Dataframes for admin charts and CSV report exports
+
+groq>=0.25.0,<1.0
+chromadb>=0.5,<2.0
+bcrypt>=4.0,<5.0
+pandas>=2.0,<3.0
+python-dotenv>=1.0,<2.0
+gradio>=6.0,<7.0
+numpy>=1.26,<3.0
+onnxruntime>=1.17,<2.0
+tokenizers>=0.19,<1.0
+huggingface-hub>=0.20,<1.0
+requests>=2.31,<3.0
+pymupdf>=1.24,<2.0
+python-docx>=1.0,<2.0
+python-pptx>=1.0,<2.0

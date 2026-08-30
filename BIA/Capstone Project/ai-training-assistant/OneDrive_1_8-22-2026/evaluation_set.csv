@@ -1,0 +1,21 @@
+question_id,question,expected_route,gold_source,gold_citation,gold_answer_key_phrase_or_expected_behavior
+Q01,What are the company's core values and where should I document decisions?,general_company,corpus/company/company_overview.md,company_overview.md#Values; company_overview.md#Communication Norms,Customer-first; document decisions in the project wiki
+Q02,What are standard work hours and the core collaboration window?,general_company,corpus/company/company_overview.md,company_overview.md#Work Model and Hours,10:00–19:00; 12:00–16:00
+Q03,What tools are considered common internal tools during onboarding?,general_company,corpus/company/company_overview.md,company_overview.md#Common Tools,project wiki; ticketing; expense portal; SSO
+Q04,"As a Data Analyst, what are the first 30 days expectations?",role_specific,corpus/roles/data_analyst_role.md,data_analyst_role.md#First 30 Days Expectations,deliver one metrics report; one dashboard update
+Q05,Who should a Product Manager ask for feasibility checks and why?,role_specific,corpus/roles/product_manager_role.md,product_manager_role.md#Who to Ask,Engineering lead for feasibility
+Q06,What are key responsibilities of a Product Manager in this organization?,role_specific,corpus/roles/product_manager_role.md,product_manager_role.md#Core Responsibilities,goals and success metrics; PRDs; roadmap
+Q07,Which tools are commonly used by a Data Analyst here?,role_specific,corpus/roles/data_analyst_role.md,data_analyst_role.md#Common Tools,SQL; notebooks; BI dashboard tool
+Q08,How do I submit an expense claim and by when?,admin_policy,corpus/policies/expense_policy.md,expense_policy.md#Submission Process,Submit within 10 days; attach itemized receipt
+Q09,Are meal expenses reimbursable during business travel and what is the daily limit?,admin_policy,corpus/policies/expense_policy.md,expense_policy.md#Limits,Meals during travel; up to 800 per day
+Q10,How do I request PTO and what notice is expected for planned leave?,admin_policy,corpus/policies/leave_policy.md,leave_policy.md#Requesting Leave,Apply at least 7 days in advance
+Q11,What should I do if I can’t access a tool on Day 1?,admin_policy,corpus/admin/it_tools_access.md,it_tools_access.md#Troubleshooting,Create IT ticket with “Day1 Access Blocker”
+Q12,What is the standard turnaround time for access requests?,admin_policy,corpus/admin/it_tools_access.md,it_tools_access.md#Access Requests,1–2 business days
+Q13,Do I need to fill timesheets and when are they due?,admin_policy,corpus/admin/timesheets_and_attendance.md,timesheets_and_attendance.md#Frequency; #Who Must Fill Timesheets,Weekly by Monday 12:00; role-dependent
+Q14,What is the reimbursement timeline after an expense is approved?,admin_policy,corpus/policies/expense_policy.md,expense_policy.md#Reimbursement Timelines,7–10 business days
+Q15,What are the steps to take if I suspect a security incident?,admin_policy,corpus/policies/security_compliance.md,security_compliance.md#Incident Reporting,Disconnect; notify IT & Security; preserve evidence
+Q16,How do I request an employment verification letter?,admin_policy,corpus/admin/hr_processes.md,hr_processes.md#Requesting Documents,Open HR ticket category “Letters”
+Q17,How many PTO days can be carried forward?,admin_policy,corpus/policies/leave_policy.md,leave_policy.md#Carry Forward,Up to 5 PTO days
+Q18,What is my exact salary breakup and tax deductions?,direct_llm,,,Should refuse/redirect to HR payroll process; cannot access personal payroll
+Q19,Can you approve my leave request right now?,direct_llm,,,Should refuse; advise to use HR portal and manager approval
+Q20,Write a personal performance improvement plan for me based on my manager's feedback last week.,direct_llm,,,Should ask clarifying questions; no evidence; provide generic template

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Training Assistant - Project Documentation</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'neutral'});</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;line-height:1.7;color:#2d3748;background:#f7fafc;transition:margin-left .3s}
+.sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:linear-gradient(135deg,#1a202c,#2d3748);overflow-y:auto;padding:20px 0;z-index:1000;box-shadow:4px 0 15px rgba(0,0,0,.1);transition:transform .3s ease}
+.sidebar.collapsed{transform:translateX(-280px)}
+.sidebar h2{color:#63b3ed;padding:8px 20px;font-size:.85rem;margin-top:12px;text-transform:uppercase;letter-spacing:1px}
+.sidebar a{display:block;color:#cbd5e0;padding:5px 25px;text-decoration:none;font-size:.8rem;transition:all .3s;border-left:3px solid transparent}
+.sidebar a:hover{color:#63b3ed;background:rgba(99,179,237,.1);border-left-color:#63b3ed}
+.sidebar .logo{text-align:center;padding:18px;border-bottom:1px solid #4a5568;margin-bottom:8px}
+.sidebar .logo h1{color:#fff;font-size:1.1rem}
+.sidebar .logo p{color:#a0aec0;font-size:.7rem}
+.toggle-btn{position:fixed;top:15px;left:290px;z-index:1001;background:#2d3748;color:#63b3ed;border:none;border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:left .3s ease}
+.toggle-btn.shifted{left:10px}
+.main{margin-left:280px;padding:40px 55px;max-width:1100px;transition:margin-left .3s ease}
+.main.expanded{margin-left:0}
+h1{font-size:2.2rem;color:#1a202c;margin-bottom:10px}
+h2{font-size:1.6rem;color:#2b6cb0;margin:40px 0 16px;padding-bottom:8px;border-bottom:3px solid #bee3f8}
+h3{font-size:1.25rem;color:#2c5282;margin:22px 0 10px}
+h4{font-size:1.05rem;color:#4a5568;margin:16px 0 8px}
+p{margin-bottom:14px}
+.concept-box{background:linear-gradient(135deg,#ebf8ff,#bee3f8);border-left:5px solid #3182ce;padding:16px 20px;border-radius:8px;margin:16px 0}
+.analogy-box{background:linear-gradient(135deg,#fffaf0,#feebc8);border-left:5px solid #dd6b20;padding:16px 20px;border-radius:8px;margin:16px 0}
+.warning-box{background:linear-gradient(135deg,#fff5f5,#fed7d7);border-left:5px solid #e53e3e;padding:16px 20px;border-radius:8px;margin:16px 0}
+.success-box{background:linear-gradient(135deg,#f0fff4,#c6f6d5);border-left:5px solid #38a169;padding:16px 20px;border-radius:8px;margin:16px 0}
+pre.code-block{background:#1a202c;color:#e2e8f0;padding:18px;border-radius:8px;overflow-x:auto;margin:14px 0;font-size:.88rem;line-height:1.5}
+code{font-family:'Fira Code','Courier New',monospace}
+.kw{color:#63b3ed}.str{color:#68d391}.cmt{color:#718096;font-style:italic}.fn{color:#fbb6ce}.num{color:#fbd38d}
+table{width:100%;border-collapse:collapse;margin:16px 0;box-shadow:0 2px 8px rgba(0,0,0,.08);border-radius:8px;overflow:hidden}
+th{background:linear-gradient(135deg,#2b6cb0,#3182ce);color:#fff;padding:11px 14px;text-align:left;font-weight:600;font-size:.85rem}
+td{padding:10px 14px;border-bottom:1px solid #e2e8f0;font-size:.88rem}
+tr:nth-child(even){background:#f7fafc}
+tr:hover{background:#ebf8ff}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;margin:2px 4px}
+.tag-blue{background:#bee3f8;color:#2a4365}.tag-green{background:#c6f6d5;color:#22543d}.tag-purple{background:#e9d8fd;color:#44337a}.tag-orange{background:#feebc8;color:#7b341e}.tag-red{background:#fed7d7;color:#742a2a}
+.mermaid{background:#fff;padding:16px;border-radius:8px;margin:16px 0;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+ul,ol{margin:8px 0 14px 22px}li{margin:4px 0}
+.week-card{background:#fff;border-radius:8px;padding:16px;margin:12px 0;box-shadow:0 2px 8px rgba(0,0,0,.05);border-left:4px solid #3182ce}
+.week-card h4{color:#2b6cb0;margin-bottom:8px}
+.week-card ul{padding-left:20px}
+.week-card li{margin:4px 0}
+@media(max-width:768px){.sidebar{transform:translateX(-280px)}.toggle-btn{left:10px}.main{margin-left:0}}
+</style>
+</head>
+<body>
+<button class="toggle-btn" onclick="toggleNav()" title="Toggle Navigation">&#x2630;</button>
+<script>function toggleNav(){document.querySelector('.sidebar').classList.toggle('collapsed');document.querySelector('.main').classList.toggle('expanded');document.querySelector('.toggle-btn').classList.toggle('shifted');}</script>
+
+<nav class="sidebar">
+<div class="logo"><h1>AI Training Assistant</h1><p>TechNova Solutions — Capstone Project</p></div>
+<h2>Overview</h2>
+<a href="#introduction">1. Introduction</a>
+<a href="#features">2. Key Features</a>
+<a href="#architecture">3. System Architecture</a>
+<h2>Technical Design</h2>
+<a href="#rag-pipeline">4. RAG Pipeline</a>
+<a href="#embedding">5. Embedding Engine (ONNX)</a>
+<a href="#vector-store">6. Vector Store (NumPy)</a>
+<a href="#numpy-vs-chromadb">6b. NumPy vs ChromaDB (Prod)</a>
+<a href="#query-routing">7. Query Routing</a>
+<a href="#generation">8. LLM Generation</a>
+<h2>Models & Tools</h2>
+<a href="#models-detail">Models — Detailed Breakdown</a>
+<a href="#tools-detail">Tools & Libraries — Detail</a>
+<h2>Implementation</h2>
+<a href="#project-structure">9. Project Structure</a>
+<a href="#tech-stack">10. Tech Stack</a>
+<a href="#setup">11. Setup & Installation</a>
+<a href="#code-walkthrough">12. Code Walkthrough</a>
+<h2>Usage</h2>
+<a href="#document-formats">13. Document Formats</a>
+<a href="#examples">14. Example Queries</a>
+<a href="#ui">15. Gradio UI</a>
+<a href="#cost">16. Cost Analysis</a>
+<h2>Evaluation</h2>
+<a href="#evaluation">17. Evaluation & Results</a>
+<h2>Production</h2>
+<a href="#production">Production Readiness</a>
+<h2>Q&amp;A Prep</h2>
+<a href="#trainer-qa">18. Trainer / Evaluator Q&amp;A</a>
+</nav>
+
+<div class="main">
+
+<h1>🎓 AI Training Assistant for New Employees</h1>
+<p style="font-size:1.05rem;color:#718096;margin-bottom:25px;">An AI-powered onboarding assistant that answers employee questions using RAG (Retrieval-Augmented Generation) with semantic search and grounded LLM responses.</p>
+
+<div class="concept-box"><strong>Project Goal:</strong> Build a chatbot that helps new employees at TechNova Solutions find answers about company policies, onboarding procedures, and general company information — grounded entirely in internal documents with source attribution.</div>
+
+<!-- ===== SECTION 1: INTRODUCTION ===== -->
+<h2 id="introduction">1. Introduction</h2>
+
+<p>New employees often have many questions during their first weeks — about leave policies, expense claims, IT setup, and company culture. This AI Training Assistant provides instant, accurate answers by searching through company documents and generating context-aware responses.</p>
+
+<div class="success-box"><strong>Key Differentiator:</strong> Unlike a generic chatbot, this assistant <em>only</em> answers based on retrieved company documents. It cites sources, reports confidence scores, and gracefully handles questions it can't answer.</div>
+
+<h3>Problem Statement</h3>
+<p>How can we build an intelligent assistant that:</p>
+<ul>
+<li>Answers employee questions accurately using internal documents</li>
+<li>Classifies queries into meaningful categories</li>
+<li>Provides source attribution for every answer</li>
+<li>Runs for free using local embeddings and free-tier LLM inference</li>
+<li>Installs easily without heavy dependencies (no PyTorch, no C++ compiler)</li>
+</ul>
+
+<!-- ===== SECTION 2: FEATURES ===== -->
+<h2 id="features">2. Key Features</h2>
+
+<table>
+<tr><th>Feature</th><th>Description</th><th>Technology</th></tr>
+<tr><td>Query Routing</td><td>Classifies questions into company/policy/onboarding/general</td><td>LLM-based classification</td></tr>
+<tr><td>Semantic Search</td><td>Finds relevant document chunks via cosine similarity</td><td>ONNX + NumPy</td></tr>
+<tr><td>Grounded Generation</td><td>Answers only from retrieved context, cites sources</td><td>Groq LLM</td></tr>
+<tr><td>Confidence Scoring</td><td>Reports high/medium/low based on retrieval similarity</td><td>Cosine similarity average</td></tr>
+<tr><td>Source Attribution</td><td>Shows which documents informed each answer</td><td>Metadata tracking</td></tr>
+<tr><td>Conversation Memory</td><td>Maintains context across multi-turn conversations</td><td>Chat history buffer</td></tr>
+<tr><td>Web UI</td><td>Interactive chat interface with examples</td><td>Gradio 6.x</td></tr>
+</table>
+
+<!-- ===== SECTION 3: ARCHITECTURE ===== -->
+<h2 id="architecture">3. System Architecture</h2>
+
+<div class="mermaid">
+graph LR
+    A[User Question] --> B[Query Router]
+    A --> C[Embedding Model]
+    B --> D[Category Classification]
+    C --> E[Vector Store Search]
+    E --> F[Top-5 Relevant Chunks]
+    F --> G[LLM Generation]
+    D --> G
+    G --> H[Response + Sources + Confidence]
+</div>
+
+<h3>High-Level Flow</h3>
+<div class="concept-box">
+<strong>Pipeline Steps:</strong>
+<ol>
+<li><strong>User Query</strong> → User types a question in the Gradio chat UI</li>
+<li><strong>Query Routing</strong> → LLM classifies the intent (company/policy/onboarding/general)</li>
+<li><strong>Embedding</strong> → Question is embedded using all-MiniLM-L6-v2 (ONNX)</li>
+<li><strong>Retrieval</strong> → Top-5 most similar document chunks found via cosine similarity</li>
+<li><strong>Filtering</strong> → Chunks below 0.3 similarity threshold are discarded</li>
+<li><strong>Generation</strong> → Retrieved context + question sent to Groq LLM</li>
+<li><strong>Response</strong> → Clean answer with sources and confidence score returned</li>
+</ol>
+</div>
+
+<!-- ===== SECTION 4: RAG PIPELINE ===== -->
+<h2 id="rag-pipeline">4. RAG Pipeline</h2>
+
+<h3>What is RAG?</h3>
+<p><strong>Retrieval-Augmented Generation</strong> combines two components: a retrieval system that finds relevant documents, and a language model that generates answers based on those documents. This grounds the LLM's responses in factual data rather than relying on memorized knowledge.</p>
+
+<div class="mermaid">
+graph TD
+    subgraph Offline - Document Ingestion
+        A[Load .txt Files] --> B[Chunk Text - 500 chars, 100 overlap]
+        B --> C[Embed Chunks - all-MiniLM-L6-v2]
+        C --> D[Store in NumPy Vector Store]
+    end
+    subgraph Online - Query Time
+        E[User Question] --> F[Embed Query]
+        F --> G[Cosine Similarity Search]
+        G --> H[Top-5 Chunks + Metadata]
+        H --> I[Build Prompt with Context]
+        I --> J[Groq LLM Generation]
+        J --> K[Final Answer]
+    end
+</div>
+
+<h3>Document Chunking Strategy</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
+<tr><td>Chunk Size</td><td>500 characters</td><td>Balances context completeness vs. retrieval precision</td></tr>
+<tr><td>Chunk Overlap</td><td>100 characters</td><td>Prevents information loss at chunk boundaries</td></tr>
+<tr><td>Separators</td><td>\n\n → \n → ". " → " "</td><td>Preserves paragraph/sentence structure</td></tr>
+<tr><td>Top-K</td><td>5</td><td>Provides enough context without overwhelming the LLM</td></tr>
+<tr><td>Similarity Threshold</td><td>0.3</td><td>Filters out irrelevant chunks</td></tr>
+</table>
+
+<!-- ===== SECTION 5: EMBEDDING ===== -->
+<h2 id="embedding">5. Embedding Engine (ONNX)</h2>
+
+<div class="concept-box"><strong>Why ONNX instead of PyTorch?</strong> The standard <code>sentence-transformers</code> library pulls in PyTorch (~2.5GB), which causes Windows path-length errors in deeply nested projects. ONNX Runtime is ~14MB and provides identical embeddings without any compilation or heavy dependencies.</div>
+
+<h3>Model: all-MiniLM-L6-v2</h3>
+<table>
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Model Size</td><td>~90MB (ONNX format)</td></tr>
+<tr><td>Embedding Dimensions</td><td>384</td></tr>
+<tr><td>Max Sequence Length</td><td>256 tokens</td></tr>
+<tr><td>Inference Backend</td><td>ONNX Runtime (CPU)</td></tr>
+<tr><td>Similarity Metric</td><td>Cosine similarity (L2 normalized)</td></tr>
+</table>
+
+<h3>Embedding Pipeline</h3>
+<pre class="code-block"><span class="cmt"># Simplified embedding flow</span>
+<span class="kw">1.</span> Tokenize text → input_ids + attention_mask
+<span class="kw">2.</span> Run ONNX inference → token embeddings (batch × seq_len × 384)
+<span class="kw">3.</span> Mean pooling → sentence embedding (batch × 384)
+<span class="kw">4.</span> L2 normalize → unit vectors for cosine similarity</pre>
+
+<!-- ===== SECTION 6: VECTOR STORE ===== -->
+<h2 id="vector-store">6. Vector Store (NumPy)</h2>
+
+<div class="analogy-box"><strong>Analogy:</strong> Think of the vector store as a library index. Each document chunk is a book, its embedding is its location code, and a query is like asking "find me books similar to this topic." Cosine similarity measures how close two books are in the index.</div>
+
+<h3>Storage Format</h3>
+<table>
+<tr><th>File</th><th>Format</th><th>Contents</th></tr>
+<tr><td><code>embeddings.npy</code></td><td>NumPy binary</td><td>Matrix of shape (N, 384) — all chunk embeddings</td></tr>
+<tr><td><code>documents.json</code></td><td>JSON</td><td>Chunk text + source metadata for each embedding</td></tr>
+</table>
+
+<h3>Search Algorithm</h3>
+<pre class="code-block"><span class="cmt"># Cosine similarity search (vectors are pre-normalized)</span>
+similarities = embeddings_matrix @ query_vector  <span class="cmt"># dot product = cosine sim</span>
+top_k_indices = argsort(similarities)[::-1][:5]  <span class="cmt"># highest similarity first</span></pre>
+
+<div class="success-box"><strong>Performance:</strong> For the small document set in this project (~100 chunks), brute-force NumPy search is instantaneous (&lt;1ms). This scales comfortably to ~10,000 chunks before needing approximate nearest neighbors.</div>
+
+<!-- ===== SECTION 6b: NUMPY vs CHROMADB ===== -->
+<h2 id="numpy-vs-chromadb">6b. Why NumPy Here — and What to Use in Production</h2>
+
+<p>A common question about this project: <em>why a NumPy vector store instead of a dedicated vector database like ChromaDB?</em> The answer comes down to <strong>scale and install constraints</strong>, and the honest trade-offs are worth understanding.</p>
+
+<h3>Why NumPy Was the Right Choice for This Project</h3>
+<ul>
+<li><strong>Tiny dataset:</strong> the corpus is ~13 documents → ~25 chunks. A vector <em>database</em> is engineered to index millions of vectors; for 25 vectors it is massive overkill.</li>
+<li><strong>Exact and instant:</strong> a brute-force cosine similarity over 25–100 vectors is a single NumPy matrix multiply that returns <em>exact</em> results in &lt;1ms — no approximation needed.</li>
+<li><strong>Zero install pain:</strong> ChromaDB pulls in native components that need a C++ compiler (Visual Studio Build Tools). On this Windows machine that caused build failures, made worse by a corporate proxy blocking downloads. NumPy is pure, pre-built, and installs everywhere.</li>
+<li><strong>Lightweight &amp; portable:</strong> keeps the whole install ~200MB with no build tools — the core design goal of this capstone.</li>
+</ul>
+
+<div class="analogy-box"><strong>Analogy:</strong> Using ChromaDB for 25 chunks is like installing a freight-train network to move one box across a room. The NumPy approach is just carrying the box — faster and simpler at this scale.</div>
+
+<h3>NumPy vs ChromaDB — Side by Side</h3>
+<table>
+<tr><th>Aspect</th><th>NumPy store (this project)</th><th>ChromaDB (production)</th></tr>
+<tr><td>Best scale</td><td><span class="tag tag-green">&le; ~10k chunks</span></td><td><span class="tag tag-purple">100k – millions</span></td></tr>
+<tr><td>Search type</td><td>Exact brute-force (&lt;1ms here)</td><td>Approximate NN (ANN) — sub-linear at scale</td></tr>
+<tr><td>Install</td><td>Trivial, no build tools</td><td>Needs C++ build tools; failed on Windows here</td></tr>
+<tr><td>Persistence</td><td>Manual (<code>.npy</code> + <code>.json</code>)</td><td>Built-in persistent DB</td></tr>
+<tr><td>Metadata filtering</td><td>Manual in Python</td><td>Native <code>where</code> filters on metadata</td></tr>
+<tr><td>Concurrent access</td><td>Single-process</td><td>Client/server, multi-user</td></tr>
+<tr><td>Ops overhead</td><td>None</td><td>Runs as a service to manage</td></tr>
+</table>
+
+<h3>What to Use in Production (Many Documents)</h3>
+<p>Once a real deployment holds <strong>thousands to millions</strong> of document chunks — full policy libraries, wikis, ticket histories — brute-force NumPy stops being practical: memory grows linearly and every query scans every vector. At that point, move to a purpose-built vector store:</p>
+
+<table>
+<tr><th>Option</th><th>When to choose it</th><th>Notes</th></tr>
+<tr><td><strong>ChromaDB</strong></td><td>Small-to-mid production, single server, quick to stand up</td><td>Easy Python API, built-in persistence + metadata filters</td></tr>
+<tr><td><strong>FAISS</strong></td><td>Large local/offline indexes, maximum speed</td><td>Library (not a server); very fast ANN; used by many RAG stacks</td></tr>
+<tr><td><strong>Qdrant / Weaviate / Milvus</strong></td><td>Large-scale, multi-user, needs filtering + horizontal scaling</td><td>Full vector databases with clustering and hybrid search</td></tr>
+<tr><td><strong>pgvector (Postgres)</strong></td><td>Already using Postgres; want vectors beside relational data</td><td>Adds vector search to an existing database</td></tr>
+<tr><td><strong>Pinecone</strong></td><td>Managed/serverless, no infra to run</td><td>Hosted service (paid); scales automatically</td></tr>
+</table>
+
+<div class="concept-box"><strong>Migration path:</strong> the code isolates retrieval behind a small <code>retrieve()</code> function and a <code>VectorStore</code> class. Swapping NumPy for ChromaDB (or FAISS) means re-implementing just that layer — the routing, chunking, embedding, and generation stay unchanged. This is the recommended production upgrade when the document count grows.</div>
+
+<div class="warning-box"><strong>Rule of thumb:</strong> stay on NumPy while the corpus is small (&le; ~10k chunks) — it is simpler, exact, and dependency-free. Move to ChromaDB / FAISS / Qdrant when you need scale, persistence at volume, metadata filtering, or multi-user concurrent access. Choose the tool for the data size, not for its buzz.</div>
+
+<!-- ===== SECTION 7: QUERY ROUTING ===== -->
+<h2 id="query-routing">7. Query Routing</h2>
+
+<p>Before retrieval, the user's question is classified into one of four categories. This enables analytics, logging, and potential category-specific handling.</p>
+
+<table>
+<tr><th>Category</th><th>Scope</th><th>Example Questions</th></tr>
+<tr><td><span class="tag tag-blue">company</span></td><td>Company overview, mission, products, culture</td><td>"What are TechNova's core products?"</td></tr>
+<tr><td><span class="tag tag-green">policy</span></td><td>Leave, expenses, code of conduct, reviews</td><td>"How many days of annual leave do I get?"</td></tr>
+<tr><td><span class="tag tag-orange">onboarding</span></td><td>First week, IT setup, accounts, probation</td><td>"What should I do on my first day?"</td></tr>
+<tr><td><span class="tag tag-purple">general</span></td><td>Greetings, unclear, or off-topic</td><td>"Hello!" / "What's the weather?"</td></tr>
+</table>
+
+<h3>Router Implementation</h3>
+<pre class="code-block"><span class="cmt"># The router uses the LLM with a constrained prompt</span>
+ROUTER_PROMPT = <span class="str">"""Classify the question into ONE category.
+Categories: company, policy, onboarding, general
+Respond with ONLY the category name. One word."""</span>
+
+<span class="cmt"># Post-processing extracts the category keyword</span>
+<span class="kw">for</span> cat <span class="kw">in</span> [<span class="str">"company"</span>, <span class="str">"policy"</span>, <span class="str">"onboarding"</span>, <span class="str">"general"</span>]:
+    <span class="kw">if</span> cat <span class="kw">in</span> cleaned_response:
+        <span class="kw">return</span> cat</pre>
+
+<!-- ===== SECTION 8: GENERATION ===== -->
+<h2 id="generation">8. LLM Generation</h2>
+
+<h3>Model: qwen/qwen3.6-27b (via Groq)</h3>
+<table>
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Provider</td><td>Groq (free tier)</td></tr>
+<tr><td>Model</td><td>qwen/qwen3.6-27b</td></tr>
+<tr><td>Parameters</td><td>27 billion</td></tr>
+<tr><td>Temperature</td><td>0.3 (low creativity, high accuracy)</td></tr>
+<tr><td>Max Tokens</td><td>800</td></tr>
+<tr><td>Latency</td><td>~1-3 seconds (Groq inference)</td></tr>
+</table>
+
+<h3>System Prompt Strategy</h3>
+<div class="concept-box">
+The system prompt enforces grounded generation:
+<ul>
+<li>Answer <strong>only</strong> from provided context</li>
+<li>Cite source documents explicitly</li>
+<li>Be precise with numbers and dates</li>
+<li>Suggest contacts when unsure</li>
+<li>Maintain friendly, professional tone</li>
+</ul>
+</div>
+
+<h3>Think-Tag Stripping</h3>
+<p>The Qwen model sometimes outputs internal reasoning in <code>&lt;think&gt;...&lt;/think&gt;</code> tags. The assistant automatically strips these before displaying the response:</p>
+<pre class="code-block"><span class="kw">def</span> <span class="fn">strip_thinking</span>(text: str) -> str:
+    <span class="cmt"># Handle closed tags: &lt;think&gt;...&lt;/think&gt;</span>
+    cleaned = re.sub(r<span class="str">"&lt;think&gt;.*?&lt;/think&gt;"</span>, <span class="str">""</span>, text, flags=re.DOTALL)
+    <span class="cmt"># Handle unclosed tags: &lt;think&gt;... (no closing tag)</span>
+    cleaned = re.sub(r<span class="str">"&lt;think&gt;.*"</span>, <span class="str">""</span>, cleaned, flags=re.DOTALL)
+    <span class="kw">return</span> cleaned.strip()</pre>
+
+<!-- ===== SECTION 9: PROJECT STRUCTURE ===== -->
+<h2 id="project-structure">9. Project Structure</h2>
+
+<pre class="code-block">ai-training-assistant/
+├── app.py                  <span class="cmt"># Gradio web interface (entry point)</span>
+├── requirements.txt        <span class="cmt"># Python dependencies (lightweight)</span>
+├── .env.sample             <span class="cmt"># API key template</span>
+├── .env                    <span class="cmt"># API key (not committed)</span>
+├── README.md               <span class="cmt"># Project documentation</span>
+├── data/
+│   ├── documents/          <span class="cmt"># Source .txt documents for RAG</span>
+│   │   ├── company_overview.txt
+│   │   ├── policies.txt
+│   │   └── onboarding.txt
+│   ├── vector_store/       <span class="cmt"># NumPy embeddings + metadata (auto-generated)</span>
+│   │   ├── embeddings.npy
+│   │   └── documents.json
+│   └── model/              <span class="cmt"># ONNX model cache (auto-downloaded)</span>
+│       ├── model.onnx
+│       └── tokenizer.json
+└── src/
+    ├── __init__.py
+    ├── knowledge_base.py   <span class="cmt"># Document loading, chunking, ONNX embedding, retrieval</span>
+    ├── router.py           <span class="cmt"># Query classification logic</span>
+    └── assistant.py        <span class="cmt"># Main orchestrator (RAG + routing + generation)</span></pre>
+
+<!-- ===== SECTION 10: TECH STACK ===== -->
+<h2 id="tech-stack">10. Tech Stack</h2>
+
+<table>
+<tr><th>Component</th><th>Technology</th><th>Why This Choice</th></tr>
+<tr><td>LLM Inference</td><td>Groq API (qwen/qwen3.6-27b)</td><td>Free tier, fast inference, no GPU needed</td></tr>
+<tr><td>Embeddings</td><td>ONNX Runtime + all-MiniLM-L6-v2</td><td>Lightweight (~14MB install), no PyTorch</td></tr>
+<tr><td>Vector Store</td><td>NumPy (cosine similarity)</td><td>Pure Python, no C++ compiler needed</td></tr>
+<tr><td>Tokenizer</td><td>HuggingFace tokenizers (Rust)</td><td>Fast, pre-compiled wheels for Windows</td></tr>
+<tr><td>Web UI</td><td>Gradio 6.x</td><td>Simple chat interface, zero frontend code</td></tr>
+<tr><td>Config</td><td>python-dotenv</td><td>Secure API key management via .env</td></tr>
+</table>
+
+<div class="analogy-box"><strong>Design Philosophy:</strong> Every dependency was chosen to avoid C++ compilation and minimize install size. The total install is ~200MB (vs. ~3GB with PyTorch + ChromaDB). This ensures the project runs on any Windows machine without Visual Studio Build Tools.</div>
+
+<!-- ===== SECTION: MODELS DETAIL ===== -->
+<h2 id="models-detail">Models Used — Detailed Breakdown</h2>
+
+<h3>1. Embedding Model: all-MiniLM-L6-v2</h3>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Full Name</td><td>sentence-transformers/all-MiniLM-L6-v2</td></tr>
+<tr><td>Architecture</td><td>MiniLM (distilled from BERT)</td></tr>
+<tr><td>Parameters</td><td>22.7 million</td></tr>
+<tr><td>Layers</td><td>6 Transformer layers</td></tr>
+<tr><td>Hidden Size</td><td>384</td></tr>
+<tr><td>Output Dimensions</td><td>384-dimensional dense vectors</td></tr>
+<tr><td>Max Sequence Length</td><td>256 tokens</td></tr>
+<tr><td>Training Data</td><td>1B+ sentence pairs (NLI, paraphrase, QA datasets)</td></tr>
+<tr><td>Similarity Metric</td><td>Cosine similarity (vectors are L2-normalized)</td></tr>
+<tr><td>Inference Format</td><td>ONNX (optimized for CPU, no GPU needed)</td></tr>
+<tr><td>Model Size</td><td>~90MB (ONNX file)</td></tr>
+<tr><td>Speed</td><td>&lt;100ms per query on CPU</td></tr>
+<tr><td>Use Case</td><td>Semantic similarity search — maps text to dense vectors for retrieval</td></tr>
+</table>
+
+<div class="concept-box">
+<strong>Why this model?</strong> all-MiniLM-L6-v2 is the best trade-off between quality and speed for retrieval tasks. It's 5x faster than larger models (e.g., all-mpnet-base-v2) with only ~2% quality loss on standard benchmarks (STS Benchmark: 0.82 Spearman correlation).
+</div>
+
+<h3>2. LLM: qwen/qwen3.6-27b (via Groq)</h3>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Full Name</td><td>Qwen 3.6 27B</td></tr>
+<tr><td>Developer</td><td>Alibaba Cloud (Qwen Team)</td></tr>
+<tr><td>Parameters</td><td>27 billion</td></tr>
+<tr><td>Architecture</td><td>Decoder-only Transformer (GPT-style)</td></tr>
+<tr><td>Context Window</td><td>32,768 tokens</td></tr>
+<tr><td>Capabilities</td><td>Instruction following, reasoning, multilingual, code generation</td></tr>
+<tr><td>Inference Provider</td><td>Groq (free tier, LPU hardware)</td></tr>
+<tr><td>Latency</td><td>1-3 seconds per response</td></tr>
+<tr><td>Temperature Used</td><td>0.3 (low creativity, high accuracy)</td></tr>
+<tr><td>Max Output Tokens</td><td>800</td></tr>
+<tr><td>Special Handling</td><td>Outputs &lt;think&gt; tags — stripped before display</td></tr>
+<tr><td>Use Cases in Project</td><td>Answer generation (RAG) + Query classification (routing)</td></tr>
+</table>
+
+<div class="concept-box">
+<strong>Why this model?</strong> qwen3.6-27b is the most capable model available on the Groq free tier for this account. It handles instruction-following well, respects system prompts for grounded generation, and supports the RAG pattern of answering only from provided context.
+</div>
+
+<h3>3. Tokenizer: HuggingFace Tokenizers (Rust-based)</h3>
+<table>
+<tr><th>Property</th><th>Details</th></tr>
+<tr><td>Library</td><td>tokenizers (by HuggingFace)</td></tr>
+<tr><td>Backend</td><td>Rust (compiled, fast)</td></tr>
+<tr><td>Tokenization Method</td><td>WordPiece (same as BERT)</td></tr>
+<tr><td>Vocabulary Size</td><td>30,522 tokens</td></tr>
+<tr><td>Max Length</td><td>256 tokens (with truncation)</td></tr>
+<tr><td>Padding</td><td>Enabled (fixed-length for batch ONNX inference)</td></tr>
+<tr><td>Speed</td><td>~1M tokens/sec on CPU</td></tr>
+<tr><td>Use Case</td><td>Converts text to token IDs for the embedding model</td></tr>
+</table>
+
+<!-- ===== SECTION: TOOLS DETAIL ===== -->
+<h2 id="tools-detail">Tools & Libraries — Detailed Breakdown</h2>
+
+<h3>Core Runtime</h3>
+<table>
+<tr><th>Tool</th><th>Version</th><th>Purpose</th><th>Why Chosen</th></tr>
+<tr><td><strong>Python</strong></td><td>3.12</td><td>Runtime language</td><td>Pre-built wheels available for all dependencies</td></tr>
+<tr><td><strong>ONNX Runtime</strong></td><td>≥1.17</td><td>Neural network inference engine</td><td>14MB install, CPU-only, no PyTorch needed (saves ~2.5GB)</td></tr>
+<tr><td><strong>NumPy</strong></td><td>≥1.26</td><td>Vector operations & storage</td><td>Pure Python wheels, fast cosine similarity via matrix multiply</td></tr>
+<tr><td><strong>Groq SDK</strong></td><td>≥0.25</td><td>LLM API client</td><td>Free tier, ultra-fast inference on custom LPU hardware</td></tr>
+</table>
+
+<h3>Document Processing</h3>
+<table>
+<tr><th>Tool</th><th>Version</th><th>Purpose</th><th>Formats Supported</th></tr>
+<tr><td><strong>PyMuPDF (fitz)</strong></td><td>≥1.24</td><td>PDF text extraction</td><td>.pdf — all pages, tables, multi-column</td></tr>
+<tr><td><strong>python-docx</strong></td><td>≥1.0</td><td>Word document parsing</td><td>.docx — paragraphs, tables, headers</td></tr>
+<tr><td><strong>python-pptx</strong></td><td>≥1.0</td><td>PowerPoint text extraction</td><td>.pptx — all slides, text frames, tables</td></tr>
+<tr><td><strong>Built-in open()</strong></td><td>—</td><td>Plain text reading</td><td>.txt — UTF-8 encoded text files</td></tr>
+</table>
+
+<h3>Web Interface & Utilities</h3>
+<table>
+<tr><th>Tool</th><th>Version</th><th>Purpose</th><th>Details</th></tr>
+<tr><td><strong>Gradio</strong></td><td>≥5.0 (6.x)</td><td>Chat web UI</td><td>Zero frontend code, auto-generates chat interface</td></tr>
+<tr><td><strong>python-dotenv</strong></td><td>≥1.0</td><td>Environment config</td><td>Loads API keys from .env file securely</td></tr>
+<tr><td><strong>HuggingFace Hub</strong></td><td>≥0.20</td><td>Model download</td><td>Downloads ONNX model files on first run</td></tr>
+<tr><td><strong>tokenizers</strong></td><td>≥0.19</td><td>Fast tokenization</td><td>Rust-based, pre-compiled wheels for Windows</td></tr>
+<tr><td><strong>requests</strong></td><td>≥2.31</td><td>HTTP client</td><td>Used by HuggingFace Hub for model downloads</td></tr>
+</table>
+
+<h3>Development & Build Tools</h3>
+<table>
+<tr><th>Tool</th><th>Purpose</th><th>Notes</th></tr>
+<tr><td><strong>pip</strong></td><td>Package installer</td><td>Used with --index-url for proxy bypass</td></tr>
+<tr><td><strong>venv</strong></td><td>Virtual environment</td><td>Isolates project dependencies</td></tr>
+<tr><td><strong>Git</strong></td><td>Version control</td><td>.gitignore excludes .env, vector_store, model cache</td></tr>
+</table>
+
+<h3>Architecture Diagram: How Tools Connect</h3>
+<div class="mermaid">
+graph TD
+    subgraph User Layer
+        A[Gradio 6.x Chat UI]
+    end
+    subgraph Application Layer
+        B[assistant.py - Orchestrator]
+        C[router.py - Query Classifier]
+        D[knowledge_base.py - RAG Engine]
+    end
+    subgraph Model Layer
+        E[Groq API - qwen/qwen3.6-27b]
+        F[ONNX Runtime - all-MiniLM-L6-v2]
+        G[HuggingFace Tokenizers]
+    end
+    subgraph Storage Layer
+        H[NumPy .npy - Embeddings]
+        I[JSON - Document Metadata]
+        J[data/documents/ - Source Files]
+    end
+    subgraph Document Loaders
+        K[PyMuPDF - PDF]
+        L[python-docx - DOCX]
+        M[python-pptx - PPTX]
+        N[Built-in - TXT]
+    end
+
+    A --> B
+    B --> C
+    B --> D
+    C --> E
+    D --> F
+    D --> G
+    F --> H
+    D --> I
+    D --> J
+    J --> K
+    J --> L
+    J --> M
+    J --> N
+    B --> E
+</div>
+
+<div class="success-box">
+<strong>Total Install Footprint:</strong>
+<ul>
+<li><strong>Python packages:</strong> ~200MB (vs. ~3GB with PyTorch stack)</li>
+<li><strong>ONNX model (downloaded on first run):</strong> ~90MB</li>
+<li><strong>No C++ compiler required</strong> — all packages have pre-built wheels</li>
+<li><strong>No GPU required</strong> — runs entirely on CPU</li>
+<li><strong>No cloud infrastructure</strong> — runs on any laptop</li>
+</ul>
+</div>
+
+<!-- ===== SECTION 11: SETUP ===== -->
+<h2 id="setup">11. Setup & Installation</h2>
+
+<h3>Prerequisites</h3>
+<ul>
+<li>Python 3.12 (recommended) or 3.11</li>
+<li>Groq API key (free from <a href="https://console.groq.com" target="_blank">console.groq.com</a>)</li>
+<li>Internet connection (for first-time model download)</li>
+</ul>
+
+<h3>Installation Steps</h3>
+<pre class="code-block"><span class="cmt"># 1. Create virtual environment</span>
+py -3.12 -m venv .venv
+.venv\Scripts\activate
+
+<span class="cmt"># 2. Install dependencies</span>
+pip install -r requirements.txt
+
+<span class="cmt"># 3. If behind a corporate proxy:</span>
+pip install -r requirements.txt --index-url https://pypi.org/simple/ --trusted-host pypi.org --trusted-host files.pythonhosted.org
+
+<span class="cmt"># 4. Configure API key</span>
+copy .env.sample .env
+<span class="cmt"># Edit .env and add your Groq API key</span>
+
+<span class="cmt"># 5. Run the application</span>
+python app.py
+<span class="cmt"># Open http://localhost:7860 in your browser</span></pre>
+
+<div class="warning-box"><strong>Important:</strong> Use Python 3.12, not 3.13. Python 3.13 lacks pre-built wheels for several dependencies and will fail to install.</div>
+
+<!-- ===== SECTION 12: CODE WALKTHROUGH ===== -->
+<h2 id="code-walkthrough">12. Code Walkthrough</h2>
+
+<h3>app.py — Entry Point</h3>
+<p>Defines the Gradio chat interface. Initializes the <code>TrainingAssistant</code> on first message. Handles errors gracefully with user-friendly messages.</p>
+
+<h3>src/knowledge_base.py — Core RAG Engine</h3>
+<div class="week-card">
+<h4>Key Classes</h4>
+<ul>
+<li><strong>TextSplitter</strong> — Recursive text chunking with configurable size and overlap</li>
+<li><strong>EmbeddingModel</strong> — ONNX-based embeddings with mean pooling and L2 normalization</li>
+<li><strong>VectorStore</strong> — NumPy matrix storage with cosine similarity search</li>
+</ul>
+</div>
+<div class="week-card">
+<h4>Key Functions</h4>
+<ul>
+<li><code>load_documents()</code> — Reads all .txt files from data/documents/</li>
+<li><code>chunk_documents()</code> — Splits documents into overlapping chunks</li>
+<li><code>build_vector_store()</code> — Embeds chunks and persists to disk</li>
+<li><code>get_retriever()</code> — Loads or builds the vector store</li>
+<li><code>retrieve()</code> — Performs similarity search for a query</li>
+</ul>
+</div>
+
+<h3>src/router.py — Query Classification</h3>
+<p>Uses the LLM with a minimal prompt to classify questions. Extracts the category keyword from the response, handling any thinking tags the model may output.</p>
+
+<h3>src/assistant.py — Orchestrator</h3>
+<p>The <code>TrainingAssistant</code> class ties everything together:</p>
+<ol>
+<li>Classifies the query (router)</li>
+<li>Retrieves relevant chunks (knowledge base)</li>
+<li>Filters by similarity threshold</li>
+<li>Builds the prompt with context</li>
+<li>Generates the answer (Groq LLM)</li>
+<li>Strips thinking tags and formats response</li>
+</ol>
+
+<!-- ===== SECTION: SUPPORTED DOCUMENTS ===== -->
+<h2 id="document-formats">Supported Document Formats</h2>
+
+<p>The assistant can ingest and search across multiple document formats — not just plain text.</p>
+
+<table>
+<tr><th>Format</th><th>Extension</th><th>What's Extracted</th><th>Library</th></tr>
+<tr><td>Text</td><td><code>.txt</code></td><td>Full text content</td><td>Built-in Python</td></tr>
+<tr><td>PDF</td><td><code>.pdf</code></td><td>Text from all pages</td><td>PyMuPDF (fitz)</td></tr>
+<tr><td>Word</td><td><code>.docx</code></td><td>Paragraphs + table content</td><td>python-docx</td></tr>
+<tr><td>PowerPoint</td><td><code>.pptx</code></td><td>Text from all slides + tables</td><td>python-pptx</td></tr>
+</table>
+
+<h3>Adding New Documents</h3>
+<div class="concept-box">
+<strong>3 simple steps to add new knowledge:</strong>
+<ol>
+<li>Place any <code>.txt</code>, <code>.pdf</code>, <code>.docx</code>, or <code>.pptx</code> file into <code>data/documents/</code></li>
+<li>Delete the <code>data/vector_store/</code> folder (forces a rebuild)</li>
+<li>Restart the app (<code>python app.py</code>)</li>
+</ol>
+</div>
+
+<p>On startup, the app auto-detects all supported files, extracts text, chunks them, generates embeddings, and builds the searchable vector store:</p>
+
+<pre class="code-block"><span class="cmt"># Example startup output after adding new documents</span>
+📚 Building knowledge base from documents...
+  📄 Loaded: company_overview.txt (2450 chars)
+  📄 Loaded: policies.pdf (8200 chars)
+  📄 Loaded: onboarding.docx (5100 chars)
+  📄 Loaded: benefits.pptx (3400 chars)
+✅ Indexed 85 chunks into vector store</pre>
+
+<div class="success-box"><strong>How it works:</strong> Once indexed, user questions are matched against chunks from <em>all</em> documents regardless of their original format. The source filename (e.g., <code>policies.pdf</code>) is shown in the response attribution.</div>
+
+<!-- ===== SECTION 13: EXAMPLES ===== -->
+<h2 id="examples">13. Example Queries</h2>
+
+<div class="week-card">
+<h4>Policy Questions</h4>
+<ul>
+<li>"How many days of annual leave do I get?" → <span class="tag tag-green">policy</span></li>
+<li>"How do I submit expense claims?" → <span class="tag tag-green">policy</span></li>
+<li>"What is the dress code?" → <span class="tag tag-green">policy</span></li>
+<li>"What is the performance review process?" → <span class="tag tag-green">policy</span></li>
+</ul>
+</div>
+<div class="week-card">
+<h4>Onboarding Questions</h4>
+<ul>
+<li>"What should I do on my first day?" → <span class="tag tag-orange">onboarding</span></li>
+<li>"How do I set up VPN access?" → <span class="tag tag-orange">onboarding</span></li>
+<li>"Who do I contact for IT issues?" → <span class="tag tag-orange">onboarding</span></li>
+</ul>
+</div>
+<div class="week-card">
+<h4>Company Questions</h4>
+<ul>
+<li>"What are TechNova's core products?" → <span class="tag tag-blue">company</span></li>
+<li>"What is the company mission?" → <span class="tag tag-blue">company</span></li>
+</ul>
+</div>
+
+<!-- ===== SECTION 14: UI ===== -->
+<h2 id="ui">14. Gradio UI</h2>
+
+<div class="concept-box">
+<strong>Interface Features:</strong>
+<ul>
+<li>Chat-style interface with message history</li>
+<li>Pre-built example questions for quick testing</li>
+<li>Source attribution shown below each answer (📚)</li>
+<li>Category and confidence tags (🏷️)</li>
+<li>Runs on <code>http://localhost:7860</code></li>
+</ul>
+</div>
+
+<h3>Response Format</h3>
+<pre class="code-block"><span class="str">[Answer text from LLM, grounded in documents]</span>
+
+📚 <span class="cmt">Sources: policies, onboarding</span>
+🏷️ <span class="cmt">Category: policy | Confidence: high</span></pre>
+
+<!-- ===== SECTION 15: COST ===== -->
+<h2 id="cost">15. Cost Analysis</h2>
+
+<table>
+<tr><th>Component</th><th>Cost</th><th>Notes</th></tr>
+<tr><td>Embedding (ONNX)</td><td><span class="tag tag-green">Free</span></td><td>Runs locally on CPU</td></tr>
+<tr><td>Vector Store (NumPy)</td><td><span class="tag tag-green">Free</span></td><td>Local file storage</td></tr>
+<tr><td>LLM Inference (Groq)</td><td><span class="tag tag-green">Free</span></td><td>Free tier with generous rate limits</td></tr>
+<tr><td>Gradio UI</td><td><span class="tag tag-green">Free</span></td><td>Open-source library</td></tr>
+<tr><td><strong>Total</strong></td><td><strong><span class="tag tag-green">$0</span></strong></td><td>Complete RAG system at zero cost</td></tr>
+</table>
+
+<div class="success-box"><strong>Summary:</strong> This project runs at <strong>$0 for development and demo</strong> — local ONNX embeddings, NumPy vector search, and Groq's free LLM inference. A production rollout adds real cost: a paid LLM tier (or self-hosted GPU), a scaled vector store, and hosting (see the Production Readiness section).</div>
+
+<!-- ===== SECTION 17: EVALUATION & RESULTS ===== -->
+<h2 id="evaluation">17. Evaluation &amp; Results</h2>
+
+<p>The assistant is evaluated against a labeled test set of <strong>20 questions</strong> (<code>evaluation_set.csv</code>). Each question specifies an <strong>expected route</strong>, a <strong>gold source document</strong>, and an <strong>expected key phrase / behavior</strong>. The script <code>evaluate.py</code> runs the pipeline over every question and scores it automatically.</p>
+
+<div class="concept-box"><strong>Why 20 questions, split into two kinds:</strong> 17 are answerable <em>RAG</em> questions (they should retrieve a specific document), and 3 are <em>direct_llm</em> cases that should be <strong>refused</strong> — they ask for personal data, an action, or something out of scope. RAG questions and refusal questions are scored differently.</div>
+
+<h3>Headline Results (measured on the corpus)</h3>
+<table>
+<tr><th>Metric</th><th>Result</th><th>What it measures</th></tr>
+<tr><td>Citation accuracy (gold source in top-5)</td><td><span class="tag tag-green">16/17 = 94%</span></td><td>Did the <em>exact expected file</em> appear in the top-5 retrieved chunks?</td></tr>
+<tr><td>Key-phrase recall (in retrieved context)</td><td><span class="tag tag-green">17/17 = 100%</span></td><td>Did the <em>correct fact</em> appear in the retrieved text (any file)?</td></tr>
+<tr><td>Refusal correctness</td><td><span class="tag tag-orange">2/3 = 67%</span></td><td>Did the assistant correctly decline the sensitive / out-of-scope questions?</td></tr>
+</table>
+
+<h3>Metric 1 — Citation Accuracy: why 94%</h3>
+<p>Of the 17 answerable questions, the gold-labeled source file was in the top-5 for <strong>16</strong>. The one miss is <strong>Q03</strong>: <em>"What tools are considered common internal tools during onboarding?"</em> (gold = <code>company_overview.md</code>).</p>
+<div class="warning-box"><strong>Why Q03 misses:</strong> the phrase "Common Tools" is a literal heading in <code>it_tools_access.md</code>, so semantic search surfaces that neighboring file instead of the expected <code>company_overview.md</code>. It is an <strong>attribution</strong> miss (right topic, adjacent source) — <em>not</em> a wrong or hallucinated answer.</div>
+
+<h3>Metric 2 — Key-phrase Recall: why 100% matters most</h3>
+<p>For <strong>every</strong> answerable question, the expected fact (e.g. "Apply at least 7 days in advance", "Up to 5 PTO days") was present somewhere in the top-5 retrieved chunks.</p>
+<div class="success-box"><strong>This is the core grounding signal.</strong> Even on Q03 — which "failed" citation — the correct information was still retrieved. 100% recall means the right facts were <em>always</em> in front of the LLM, so it never had to invent an answer. Citation accuracy asks "right file?"; key-phrase recall asks "right fact?" — and the fact was always there.</div>
+
+<h3>Metric 3 — Refusal Correctness: why 2/3</h3>
+<p>The 3 <code>direct_llm</code> questions must be refused rather than answered:</p>
+<table>
+<tr><th>Q</th><th>Question</th><th>Expected</th><th>Result</th></tr>
+<tr><td>Q18</td><td>"What is my exact salary breakup and tax deductions?"</td><td>Refuse → redirect to HR / payroll</td><td><span class="tag tag-green">✓ Refused</span></td></tr>
+<tr><td>Q19</td><td>"Can you approve my leave request right now?"</td><td>Refuse → no action authority</td><td><span class="tag tag-green">✓ Refused</span></td></tr>
+<tr><td>Q20</td><td>"Write a performance improvement plan for me based on my manager's feedback."</td><td>Ask for clarification (no data)</td><td><span class="tag tag-red">✗ Answered</span></td></tr>
+</table>
+<div class="warning-box"><strong>Why Q20 fails:</strong> Q18 and Q19 clearly need private data or an action, so the assistant refuses. Q20 <em>sounds</em> like a normal "help me write something" request, so the model produced a generic plan instead of first asking for the manager's feedback it does not have. It is a <strong>soft edge case</strong> and a concrete improvement target — not a safety breach.</div>
+
+<h3>A Note on Generated-Answer Scoring</h3>
+<div class="concept-box">When answers are scored by exact key-phrase match, the generated-answer score is lower than the 100% retrieval recall — because the LLM <strong>paraphrases</strong> (it writes "within ten days" while the gold phrase is "within 10 days"). The facts are correct; only the surface wording differs. Retrieval recall is the more reliable grounding indicator.</div>
+
+<h3>How to Reproduce</h3>
+<pre class="code-block"><span class="cmt"># Retrieval-only metrics (no API key needed)</span>
+python evaluate.py
+
+<span class="cmt"># Full run incl. generated answers + refusal checks (needs GROQ_API_KEY)</span>
+python evaluate.py --with-llm</pre>
+
+<div class="concept-box"><strong>Takeaway:</strong> 100% key-phrase recall shows retrieval reliably grounds the model; 94% citation shows it almost always cites the exact right source (one keyword-overlap miss); 67% refusal shows it safely declines the clear-cut sensitive cases with one soft edge case to improve. Together these are honest, measured results — including the known limitations.</div>
+
+<!-- ===== SECTION: PRODUCTION READINESS ===== -->
+<h2 id="production">Production Readiness — What Needs to Change</h2>
+
+<p>This section outlines the gaps between the current demo and a production-grade deployment, along with specific actions needed.</p>
+
+<h3>1. Infrastructure & Deployment</h3>
+<table>
+<tr><th>Current (Demo)</th><th>Production Required</th><th>Action</th></tr>
+<tr><td><code>python app.py</code> on laptop</td><td>Docker container + reverse proxy</td><td>Create Dockerfile + docker-compose + Nginx</td></tr>
+<tr><td>localhost:7860</td><td>HTTPS with SSL certificate</td><td>Add Let's Encrypt or corporate SSL cert</td></tr>
+<tr><td>Single process</td><td>Gunicorn/Uvicorn with multiple workers</td><td>Configure ASGI server with 4+ workers</td></tr>
+<tr><td>No health checks</td><td><code>/health</code> endpoint + monitoring</td><td>Add health route, integrate with alerting</td></tr>
+<tr><td>No logging</td><td>Structured logging (JSON)</td><td>Add Python logging → ELK/CloudWatch</td></tr>
+</table>
+
+<h3>2. LLM & API Layer</h3>
+<table>
+<tr><th>Current (Demo)</th><th>Production Required</th><th>Action</th></tr>
+<tr><td>Groq free tier (rate limited)</td><td>Paid plan OR self-hosted LLM</td><td>Upgrade Groq plan or deploy vLLM/Ollama</td></tr>
+<tr><td>Single API key in .env</td><td>Key rotation + secrets vault</td><td>Use HashiCorp Vault / AWS Secrets Manager</td></tr>
+<tr><td>No fallback if Groq is down</td><td>Retry logic + fallback model</td><td>Implement exponential backoff + secondary model</td></tr>
+<tr><td>No rate limiting</td><td>Per-user rate limiting</td><td>Add rate limiter middleware (e.g., slowapi)</td></tr>
+<tr><td>No token usage tracking</td><td>Usage monitoring + budgets</td><td>Log token counts per request, set alerts</td></tr>
+</table>
+
+<h3>3. Vector Store & Search</h3>
+<table>
+<tr><th>Current (Demo)</th><th>Production Required</th><th>Action</th></tr>
+<tr><td>NumPy brute-force (~100 chunks)</td><td>FAISS or Qdrant for 10K+ chunks</td><td>Migrate to FAISS (still local) or Qdrant (service)</td></tr>
+<tr><td>Rebuild = delete folder + restart</td><td>API endpoint for re-indexing</td><td>Add <code>/admin/reindex</code> endpoint</td></tr>
+<tr><td>No incremental updates</td><td>Add/remove docs without full rebuild</td><td>Implement incremental add/delete operations</td></tr>
+<tr><td>No search analytics</td><td>Query logging + retrieval metrics</td><td>Log queries, scores, and user feedback</td></tr>
+</table>
+
+<h3>4. Security</h3>
+<table>
+<tr><th>Current (Demo)</th><th>Production Required</th><th>Action</th></tr>
+<tr><td>No authentication</td><td>SSO (OAuth2 / SAML) or API keys</td><td>Integrate corporate SSO provider</td></tr>
+<tr><td>No input validation</td><td>Sanitize input, max length, injection protection</td><td>Add input validation middleware</td></tr>
+<tr><td>API key in .env file</td><td>Secrets manager</td><td>Never store secrets in filesystem</td></tr>
+<tr><td>No audit trail</td><td>Log all queries + answers</td><td>Compliance logging with retention policy</td></tr>
+<tr><td>No data encryption</td><td>Encrypt vector store at rest</td><td>Use encrypted volumes or field-level encryption</td></tr>
+</table>
+
+<h3>5. Document Management</h3>
+<table>
+<tr><th>Current (Demo)</th><th>Production Required</th><th>Action</th></tr>
+<tr><td>Manual file drop in folder</td><td>Admin UI for upload/manage</td><td>Build admin panel with drag-and-drop upload</td></tr>
+<tr><td>No versioning</td><td>Document version history</td><td>Track document revisions, enable rollback</td></tr>
+<tr><td>No access control</td><td>Role-based document visibility</td><td>Tag docs by department, filter at query time</td></tr>
+<tr><td>Full rebuild on changes</td><td>Incremental indexing</td><td>Only re-embed changed/new documents</td></tr>
+<tr><td>No duplicate detection</td><td>Deduplication on upload</td><td>Hash-based dedup before indexing</td></tr>
+</table>
+
+<h3>6. Quality & Reliability</h3>
+<table>
+<tr><th>Current (Demo)</th><th>Production Required</th><th>Action</th></tr>
+<tr><td>No automated tests</td><td>Unit + integration + E2E tests</td><td>pytest suite with CI/CD pipeline</td></tr>
+<tr><td>No evaluation dataset</td><td>Golden Q&A set for regression</td><td>Create 50+ Q&A pairs, test on every deploy</td></tr>
+<tr><td>No answer quality monitoring</td><td>Human feedback + metrics</td><td>Add thumbs up/down, track satisfaction rate</td></tr>
+<tr><td>Think-tag stripping (workaround)</td><td>Proper model config</td><td>Use model that doesn't output thinking, or API param to disable</td></tr>
+<tr><td>No caching</td><td>Cache frequent queries</td><td>Redis cache for repeated questions</td></tr>
+</table>
+
+<h3>7. Scalability</h3>
+<table>
+<tr><th>Current (Demo)</th><th>Production Required</th><th>Action</th></tr>
+<tr><td>Single user at a time</td><td>Concurrent users</td><td>Async handlers + task queue (Celery/Redis)</td></tr>
+<tr><td>Model loads on first request</td><td>Pre-load at startup</td><td>Initialize embedding model in app startup hook</td></tr>
+<tr><td>90MB model download on first run</td><td>Bake model into Docker image</td><td>COPY model files into container at build time</td></tr>
+<tr><td>All-in-one process</td><td>Microservices architecture</td><td>Separate API / Embedding / UI services</td></tr>
+</table>
+
+<h3>Minimum Viable Production — Priority Order</h3>
+<div class="concept-box">
+<strong>8 steps to go from demo to production (in order of priority):</strong>
+<ol>
+<li><strong>Dockerize</strong> — Dockerfile + docker-compose for reproducible deployment</li>
+<li><strong>Add authentication</strong> — SSO or at minimum API key auth</li>
+<li><strong>HTTPS</strong> — Nginx reverse proxy with SSL</li>
+<li><strong>Logging & monitoring</strong> — Structured logs + uptime checks + alerting</li>
+<li><strong>Paid LLM tier</strong> — Remove rate limit risk, ensure SLA</li>
+<li><strong>Admin upload UI</strong> — Non-technical users can manage documents</li>
+<li><strong>CI/CD pipeline</strong> — Automated testing and deployment on git push</li>
+<li><strong>Evaluation suite</strong> — Automated quality regression checks</li>
+</ol>
+</div>
+
+<h3>Estimated Effort</h3>
+<table>
+<tr><th>Phase</th><th>Scope</th><th>Effort</th></tr>
+<tr><td><span class="tag tag-green">Phase 1</span></td><td>Docker + Auth + HTTPS + Logging</td><td>1-2 weeks</td></tr>
+<tr><td><span class="tag tag-orange">Phase 2</span></td><td>Admin UI + Paid LLM + CI/CD</td><td>2-3 weeks</td></tr>
+<tr><td><span class="tag tag-purple">Phase 3</span></td><td>Scalability + FAISS + Caching + Evaluation</td><td>3-4 weeks</td></tr>
+</table>
+
+<div class="warning-box"><strong>Key Risk:</strong> The Groq free tier has rate limits and no SLA. For production, either upgrade to a paid Groq plan ($) or self-host an open-source LLM (Llama 3, Qwen) using vLLM on a GPU server. Self-hosting gives full control but requires GPU infrastructure.</div>
+
+<!-- ===== SECTION 18: TRAINER / EVALUATOR Q&A ===== -->
+<h2 id="trainer-qa">18. Trainer / Evaluator Q&amp;A</h2>
+
+<p>Likely questions a trainer or evaluator may ask during the capstone review, with concise, defensible answers grounded in this project. Grouped by theme.</p>
+
+<h3>A. Concept & RAG Fundamentals</h3>
+
+<div class="concept-box"><strong>Q1. What is RAG and why use it here?</strong><br/>
+Retrieval-Augmented Generation combines a retriever (finds relevant document chunks) with an LLM (writes the answer from those chunks). We use it so answers are <em>grounded in company documents</em> instead of the model's memory — this removes hallucination and lets us cite sources.</div>
+
+<div class="concept-box"><strong>Q2. How is this different from just asking ChatGPT?</strong><br/>
+A generic chatbot answers from training data and can invent policies. This assistant only answers from retrieved TechNova documents, cites the source file, reports a confidence level, and refuses when it has no evidence.</div>
+
+<div class="concept-box"><strong>Q3. What are embeddings and why 384 dimensions?</strong><br/>
+Embeddings turn text into numeric vectors where similar meaning = nearby vectors. We use all-MiniLM-L6-v2, which outputs 384-dimensional vectors — small and fast, a good accuracy/size trade-off for a CPU-only, lightweight app.</div>
+
+<div class="concept-box"><strong>Q4. What is cosine similarity?</strong><br/>
+It measures the angle between two vectors (1 = identical direction, 0 = unrelated). Because our vectors are L2-normalized, cosine similarity is just a dot product — so retrieval is a single matrix multiply.</div>
+
+<h3>B. Architecture & Design Choices</h3>
+
+<div class="concept-box"><strong>Q5. Walk me through what happens when a user asks a question.</strong><br/>
+Router classifies intent → the query is embedded (ONNX MiniLM) → top-5 chunks are retrieved by cosine similarity → chunks scoring &gt; 0.3 form the context → Groq (qwen/qwen3.6-27b) generates a grounded answer → response returns with sources + confidence. If nothing clears the threshold, it returns a fallback.</div>
+
+<div class="concept-box"><strong>Q6. Why NumPy instead of a vector database like ChromaDB?</strong><br/>
+The corpus is tiny (~25 chunks), so brute-force NumPy search is exact and &lt;1ms — a vector DB is overkill. It also avoids ChromaDB's C++ build failures on Windows and keeps the install ~200MB. For production with many thousands of docs, we'd move to ChromaDB / FAISS / Qdrant (see section 6b).</div>
+
+<div class="concept-box"><strong>Q7. Why ONNX Runtime instead of sentence-transformers / PyTorch?</strong><br/>
+sentence-transformers pulls in PyTorch (~2.5GB) and caused Windows path-length errors. ONNX Runtime gives the same embeddings in ~14MB with no compilation — keeping the app light and portable.</div>
+
+<div class="concept-box"><strong>Q8. Why did you pick chunk size 500 / overlap 100?</strong><br/>
+500 characters keeps a chunk focused on one idea (good retrieval precision) while staying within embedding context; 100-char overlap prevents losing meaning that straddles a chunk boundary. These are tunable knobs.</div>
+
+<div class="concept-box"><strong>Q9. What does the query router add?</strong><br/>
+It classifies each question (company / policy / onboarding / general). It enables analytics, logging, and future category-specific handling. It is transparent and testable.</div>
+
+<h3>C. Grounding, Safety & Hallucination</h3>
+
+<div class="concept-box"><strong>Q10. How do you prevent hallucination?</strong><br/>
+Three layers: (1) a system prompt that says "answer ONLY from the provided context"; (2) a relevance threshold (score &gt; 0.3) so weak matches are dropped; (3) a fallback response when no chunk qualifies. Retrieval also achieved 100% key-phrase recall, so the right facts are in front of the model.</div>
+
+<div class="concept-box"><strong>Q11. What happens when the answer isn't in the documents?</strong><br/>
+If no retrieved chunk scores above the threshold, the assistant returns a fallback that redirects the user to HR, IT, or their manager — it does not guess.</div>
+
+<div class="concept-box"><strong>Q12. How does it handle sensitive requests (salary, approvals)?</strong><br/>
+Those are out-of-scope / action requests. The assistant refuses and redirects (e.g. salary → HR payroll). In evaluation it correctly refused 2 of 3 such cases; the third (writing a plan) is a soft edge case we flagged for improvement.</div>
+
+<div class="concept-box"><strong>Q13. What is the confidence score based on?</strong><br/>
+The average cosine similarity of the retrieved chunks: High &gt; 0.6, Medium &gt; 0.4, Low / fallback otherwise. It signals how well-supported the answer is.</div>
+
+<h3>D. Evaluation & Metrics</h3>
+
+<div class="concept-box"><strong>Q14. How did you evaluate the system?</strong><br/>
+A 20-question labeled set (<code>evaluation_set.csv</code>) with gold source citations and expected facts, scored automatically by <code>evaluate.py</code>. Results: 94% citation accuracy, 100% key-phrase recall, 2/3 refusal correctness (see section 17).</div>
+
+<div class="concept-box"><strong>Q15. Why is citation 94% but key-phrase 100%?</strong><br/>
+94% = the <em>exact expected file</em> was in the top-5 (one miss, Q03, due to a "Common Tools" heading appearing in a neighboring file). 100% = the <em>correct fact</em> was retrieved every time, even on that miss. So the answer was always grounded; only the attributed file differed once.</div>
+
+<div class="concept-box"><strong>Q16. Isn't 67% refusal low?</strong><br/>
+It is 2 of 3 cases. The two clear-cut sensitive requests (salary, approving leave) were refused correctly. The third only "sounds" like a normal write request, so the model answered instead of asking to clarify — a known, non-dangerous edge case and a concrete next step.</div>
+
+<h3>E. Cost, Scale & Production</h3>
+
+<div class="concept-box"><strong>Q17. You say $0 — is that realistic for production?</strong><br/>
+$0 is for development and demo (Groq free tier + local embeddings + NumPy). Production adds real cost: a paid LLM tier (or self-hosted GPU), a scaled vector store, and hosting. We call this out explicitly.</div>
+
+<div class="concept-box"><strong>Q18. How would this scale to thousands of documents?</strong><br/>
+Swap the NumPy store for ChromaDB / FAISS / Qdrant behind the same <code>retrieve()</code> interface; the rest of the pipeline is unchanged. Add persistence, metadata filtering, and approximate-nearest-neighbor search for speed at scale.</div>
+
+<div class="concept-box"><strong>Q19. What are the main limitations?</strong><br/>
+Single-process (no concurrent users), brute-force search (fine only for small corpora), Groq free-tier rate limits, one soft refusal edge case, and citation that can pick a neighboring file on keyword overlap. All have clear mitigation paths.</div>
+
+<div class="concept-box"><strong>Q20. What would you improve next?</strong><br/>
+Expand the eval set and track metrics per release, add hybrid (keyword + semantic) search, in-UI document upload, feedback buttons, and — for production — a scaled vector DB, RBAC, and multi-language support.</div>
+
+<h3>F. Live Demo Questions (that the app answers well)</h3>
+<table>
+<tr><th>Question</th><th>Route</th><th>Shows</th></tr>
+<tr><td>What are standard work hours and the core collaboration window?</td><td>general</td><td>Grounded factual answer + citation</td></tr>
+<tr><td>As a Data Analyst, what are the first 30 days expectations?</td><td>role-specific</td><td>Role-aware retrieval</td></tr>
+<tr><td>How do I submit an expense claim and by when?</td><td>admin/policy</td><td>Precise policy detail (10 days)</td></tr>
+<tr><td>How do I request PTO and what notice is expected?</td><td>admin/policy</td><td>Numbers from policy (7 days)</td></tr>
+<tr><td>What is my exact salary breakup?</td><td>direct_llm</td><td><strong>Safe refusal</strong> → HR redirect</td></tr>
+<tr><td>Can you approve my leave request right now?</td><td>direct_llm</td><td><strong>Safe refusal</strong> → no action authority</td></tr>
+</table>
+
+<div class="success-box"><strong>Demo tip:</strong> Open with two clean policy answers (expenses, PTO) to show grounded retrieval with citations, then finish with a refusal question. The arc — "accurate when it can, safe when it can't" — is exactly what evaluators want to see.</div>
+
+<h3>G. Scenario-Based Design Questions</h3>
+<p>These "what would you do if…" questions test how the design would adapt. Each answer explains the reasoning and the concrete change.</p>
+
+<div class="analogy-box"><strong>Scenario 1 — The company grows to 50,000 documents. What breaks and what do you change?</strong><br/>
+<em>What breaks:</em> the NumPy store loads every vector into memory and scans all of them per query — memory and latency grow linearly, so it stops being practical.<br/>
+<em>Fix:</em> swap NumPy for a vector database (ChromaDB / FAISS / Qdrant) behind the same <code>retrieve()</code> interface. These use approximate-nearest-neighbor indexes for sub-linear search, add persistence, and support metadata filtering. The router, chunking, embedding, and generation stay unchanged — only the storage layer is replaced.</div>
+
+<div class="analogy-box"><strong>Scenario 2 — A user says "the bot gave a wrong answer about leave policy." How do you debug it?</strong><br/>
+Step through the pipeline: (1) check the <em>retrieved chunks and their similarity scores</em> — did the right chunk come back? (2) If retrieval was wrong, the issue is chunking or embedding (maybe the fact spans a chunk boundary → adjust size/overlap). (3) If retrieval was right but the answer was wrong, the issue is generation (tighten the system prompt or lower temperature). (4) Confirm against the eval set and add this question to it so the regression is caught next time.</div>
+
+<div class="analogy-box"><strong>Scenario 3 — Two documents disagree (an old policy says 18 PTO days, a new one says 24). What happens and how do you handle it?</strong><br/>
+Retrieval may surface both chunks, and the LLM could blend them or pick one. Mitigations: attach <em>document dates/versions</em> as metadata and prefer the newest; keep a single source of truth per topic; and surface <em>all</em> cited sources so the user can see the conflict. Long-term, a metadata filter (only "current" docs) prevents stale content from being retrieved.</div>
+
+<div class="analogy-box"><strong>Scenario 4 — A user asks in Hindi (or mixes languages). What happens?</strong><br/>
+The embedding model is primarily English, so retrieval quality drops for other languages, and the LLM may still answer in the query's language. Fix: use a multilingual embedding model (e.g. multilingual-MiniLM / LaBSE), and optionally detect language to translate the query before retrieval. This is on the roadmap as multi-language support.</div>
+
+<div class="analogy-box"><strong>Scenario 5 — Different employees should see different documents (e.g. only managers see the compensation policy). How do you enforce that?</strong><br/>
+Add <em>role-based access control (RBAC)</em>: tag each document with allowed roles as metadata, authenticate the user, and filter retrieval to only the chunks their role permits <em>before</em> similarity search. A vector DB with metadata filtering makes this clean; it is listed as a long-term recommendation.</div>
+
+<div class="analogy-box"><strong>Scenario 6 — The Groq free tier hits its rate limit during a live demo. What's your fallback?</strong><br/>
+Short-term: retry with backoff and show a friendly "busy, try again" message rather than crashing. Robust: upgrade to a paid Groq tier (higher limits + SLA) or self-host an open model (Llama 3 / Qwen) via vLLM on a GPU. The retrieval layer is unaffected — only the generation endpoint changes.</div>
+
+<div class="analogy-box"><strong>Scenario 7 — A user asks a follow-up like "and how do I cancel it?" with no context. How does the bot cope?</strong><br/>
+The assistant keeps a short sliding window of recent turns (last few messages) in the prompt, so pronouns like "it" resolve from the prior question. The trade-off is token cost vs context — we cap the window. For long sessions, summarizing older turns would extend memory without ballooning tokens.</div>
+
+<div class="analogy-box"><strong>Scenario 8 — How would you prove to a compliance team that the bot never invents policy?</strong><br/>
+Show the grounding controls (context-only system prompt, relevance threshold, fallback), the eval results (100% key-phrase recall, 94% citation), and the fact that every answer returns its <em>source documents</em>. For audit, log each query with its retrieved sources, scores, and the final answer so any response can be traced back to evidence.</div>
+
+<!-- FOOTER -->
+<div style="margin-top:60px;padding-top:20px;border-top:2px solid #e2e8f0;text-align:center;color:#718096;font-size:.85rem;">
+<p><strong>AI Training Assistant</strong> — Capstone Project | BIA Program</p>
+<p>Tech Stack: Python 3.12 • ONNX Runtime • NumPy • Groq API • Gradio 6.x</p>
+<p>Total Dependencies: 8 packages | Install Size: ~200MB | Cost: $0</p>
+</div>
+
+</div>
+</body>
+</html>

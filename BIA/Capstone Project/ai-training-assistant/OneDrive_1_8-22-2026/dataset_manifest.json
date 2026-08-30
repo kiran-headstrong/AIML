@@ -1,0 +1,46 @@
+{
+  "dataset_name": "AI Training Assistant - Internal Docs (Test-only)",
+  "version": "1.0",
+  "created_utc": "2026-01-12T08:18:49Z",
+  "intended_use": "Test-only sample dataset for building an onboarding/training assistant with routing + multi-source RAG.",
+  "folders": {
+    "corpus": {
+      "path": "corpus/",
+      "description": "Markdown documents grouped by knowledge source."
+    }
+  },
+  "routes": {
+    "general_company": {
+      "description": "General company questions",
+      "suggested_paths": [
+        "corpus/company/"
+      ]
+    },
+    "role_specific": {
+      "description": "Role/team questions",
+      "suggested_paths": [
+        "corpus/roles/"
+      ]
+    },
+    "admin_policy": {
+      "description": "Administrative/policy questions",
+      "suggested_paths": [
+        "corpus/policies/",
+        "corpus/admin/",
+        "corpus/faq/"
+      ]
+    },
+    "direct_llm": {
+      "description": "Fallback: refuse/clarify when evidence is missing/out-of-scope",
+      "suggested_paths": []
+    }
+  },
+  "evaluation_set": {
+    "path": "evaluation_set.csv",
+    "min_questions": 20
+  },
+  "notes": [
+    "All documents are synthetic and generic.",
+    "Implement refusal and escalation behavior for sensitive requests."
+  ]
+}
