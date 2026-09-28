@@ -84,10 +84,15 @@ The first run downloads the embedding model (~80 MB). After that, everything wor
 ### 4. Launch the app
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py --server.headless true --server.port 8502
 ```
 
-The chat interface opens in your browser at [http://localhost:8501](http://localhost:8501).
+Then open [http://localhost:8502](http://localhost:8502) in your browser.
+
+- `--server.headless true` prevents Streamlit from trying to auto-open a browser (avoids issues in some environments).
+- `--server.port 8502` sets the port; change it if 8502 is in use.
+
+Keep the terminal open while using the app. On Windows, avoid clicking inside the terminal window (Quick Edit mode pauses the process — press Enter to resume).
 
 Type a question in the chat box at the bottom. Your conversation history is preserved on screen, and you can ask follow-up questions (e.g. "any other details?") — vague follow-ups automatically borrow context from your previous question. Use the sidebar **"Clear history"** button to reset the conversation.
 
