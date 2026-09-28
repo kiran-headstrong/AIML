@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Internal Training Content Search Assistant — Requirements & Design</title>
+<style>
+  :root {
+    --primary: #0033a0;
+    --primary-dark: #001a5c;
+    --primary-light: #e8f0fe;
+    --accent: #00539b;
+    --success: #1a7f37;
+    --warning: #d4a017;
+    --danger: #dc2626;
+    --bg: #f8f9fa;
+    --card-bg: #fff;
+    --text: #1f2933;
+    --muted: #64748b;
+    --border: #e2e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 270px;
+    height: 100vh;
+    background: linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 100%);
+    color: #fff;
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  .sidebar h2 {
+    font-size: 1.05rem;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.3px;
+  }
+
+  .sidebar .subtitle {
+    font-size: 0.75rem;
+    color: #b9c7e8;
+    margin-bottom: 1.5rem;
+  }
+
+  .sidebar nav a {
+    display: block;
+    color: #d5def5;
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    margin-bottom: 0.15rem;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .sidebar nav a:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+  .sidebar nav a.active { background: rgba(255, 255, 255, 0.18); color: #fff; font-weight: 600; }
+
+  .sidebar nav .nav-group {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8fa3d4;
+    margin: 1rem 0 0.35rem 0.75rem;
+  }
+
+  /* ---------------- Main ---------------- */
+  .main {
+    margin-left: 270px;
+    padding: 0 0 4rem;
+  }
+
+  .hero {
+    background: linear-gradient(120deg, var(--primary) 0%, var(--accent) 100%);
+    color: #fff;
+    padding: 3rem 2.5rem;
+  }
+
+  .hero h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+  .hero p { max-width: 820px; color: #e5ecfb; font-size: 1.02rem; }
+
+  .hero .meta {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .content { padding: 2rem 2.5rem; max-width: 1100px; }
+
+  .section { scroll-margin-top: 1rem; margin-bottom: 2.5rem; }
+
+  .section > h2 {
+    font-size: 1.5rem;
+    color: var(--primary-dark);
+    border-bottom: 3px solid var(--primary-light);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .section h3 {
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  .section p { margin-bottom: 0.85rem; }
+  .section ul, .section ol { margin: 0 0 0.85rem 1.4rem; }
+  .section li { margin-bottom: 0.35rem; }
+
+  /* ---------------- Cards ---------------- */
+  .card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border);
+  }
+
+  .card h3 { margin-top: 0; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+
+  /* ---------------- Badges ---------------- */
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-blue { background: var(--primary-light); color: var(--primary-dark); }
+  .badge-green { background: #dcfce7; color: var(--success); }
+  .badge-yellow { background: #fef3c7; color: #92700e; }
+  .badge-red { background: #fee2e2; color: var(--danger); }
+  .hero .badge { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+  /* ---------------- Tables ---------------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  thead th {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    font-weight: 600;
+  }
+
+  tbody td { padding: 0.65rem 0.9rem; border-top: 1px solid var(--border); vertical-align: top; }
+  tbody tr:hover { background: #f1f5fb; }
+
+  /* ---------------- Code blocks ---------------- */
+  .code-block {
+    background: #0d1b2a;
+    color: #e6edf3;
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+    font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    white-space: pre;
+  }
+
+  code.inline {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 0.85em;
+  }
+
+  /* ---------------- Info boxes ---------------- */
+  .info {
+    border-left: 4px solid var(--accent);
+    background: #eef4fb;
+    padding: 0.9rem 1.1rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    font-size: 0.92rem;
+  }
+
+  .info.warn { border-left-color: var(--warning); background: #fdf6e3; }
+  .info.success { border-left-color: var(--success); background: #eafaf0; }
+
+  /* ---------------- Footer ---------------- */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem 1rem;
+    margin: 2rem 2.5rem 0;
+  }
+
+  footer .metrics {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  footer .metric strong { display: block; font-size: 1.4rem; color: var(--primary); }
+
+  /* ---------------- Mobile ---------------- */
+  .menu-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 200;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 860px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .menu-toggle { display: block; }
+    .hero { padding: 3.5rem 1.5rem 2rem; }
+    .content { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation">&#9776;</button>
+
+<aside class="sidebar">
+  <h2>Training Content Search</h2>
+  <div class="subtitle">Requirements &amp; Design Reference</div>
+  <nav>
+    <a href="#overview">Overview</a>
+    <div class="nav-group">Requirements</div>
+    <a href="#introduction">Introduction &amp; Scope</a>
+    <a href="#glossary">Glossary</a>
+    <a href="#requirements">Functional Requirements</a>
+    <div class="nav-group">Design</div>
+    <a href="#design-overview">Design Overview</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#project-structure">Project Structure</a>
+    <a href="#interfaces">Components &amp; Interfaces</a>
+    <a href="#data-models">Data Models</a>
+    <a href="#config">Configuration</a>
+    <a href="#properties">Correctness Properties</a>
+    <a href="#error-handling">Error Handling</a>
+    <a href="#testing">Testing Strategy</a>
+    <div class="nav-group">Enhancements</div>
+    <a href="#enhancements">Post-Build Enhancements</a>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="hero">
+    <h1>Internal Training Content Search Assistant</h1>
+    <p>
+      A low-cost, local-first Streamlit prototype that lets operations users search across mixed
+      internal training content — PDFs, TXT/Markdown notes, and screenshots — and retrieve the most
+      relevant guidance with clear source references, a query category, a confidence indicator, and
+      a suggested next step.
+    </p>
+    <div class="meta">
+      <span class="badge">Python 3.10+</span>
+      <span class="badge">Streamlit</span>
+      <span class="badge">sentence-transformers</span>
+      <span class="badge">Chroma / FAISS</span>
+      <span class="badge">Local-first · No GPU · No paid cloud</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ============ OVERVIEW ============ -->
+    <section id="overview" class="section">
+      <h2>Overview</h2>
+      <div class="card">
+        <p>
+          The operations enablement team answers repeated process questions by manually checking
+          shared folders, PDF training decks, screenshots from internal tools, and short SOP notes.
+          The same topics are explained in multiple places but cannot be searched together, which
+          slows response time. This prototype ingests a bounded corpus, builds a searchable index
+          using local embeddings, and presents source-backed answers through a simple Streamlit
+          search interface.
+        </p>
+        <p>It is deliberately scoped as a <strong>retrieval prototype</strong> — not a broad chatbot,
+          a full multimodal reasoning system, or an enterprise knowledge platform.</p>
+        <div class="grid-2" style="margin-top:1rem;">
+          <div class="info"><strong>Corpus size:</strong> ~30–60 text documents/sections and
+            ~20–40 screenshots.</div>
+          <div class="info success"><strong>Cost:</strong> runs on a standard CPU laptop with no
+            GPU and no paid cloud service.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ INTRODUCTION ============ -->
+    <section id="introduction" class="section">
+      <h2>Introduction &amp; Scope</h2>
+      <div class="card">
+        <h3>Deliverables (20-day cycle)</h3>
+        <ul>
+          <li>Complete source code and the Streamlit prototype</li>
+          <li>Ingestion and indexing scripts</li>
+          <li>A structured metadata file plus an optional screenshot metadata file</li>
+          <li>20–30 test queries with recorded retrieved outputs</li>
+          <li>A README, notes on assumptions and limitations, and a short evaluation summary</li>
+        </ul>
+        <div class="info warn">
+          The corpus combines a sanitized starter dataset pack with additional publicly available
+          reference content used to extend retrieval testing.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GLOSSARY ============ -->
+    <section id="glossary" class="section">
+      <h2>Glossary</h2>
+      <table>
+        <thead><tr><th style="width:230px;">Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Assistant</strong></td><td>The complete prototype: ingestion, indexing, retrieval, and the Streamlit interface.</td></tr>
+          <tr><td><strong>Ingestion_Component</strong></td><td>Reads source files from a local folder and prepares them for indexing (extraction, chunking, metadata assembly).</td></tr>
+          <tr><td><strong>PDF_Extractor</strong></td><td>Extracts text and page/section references from PDF files.</td></tr>
+          <tr><td><strong>Screenshot_Indexer</strong></td><td>Indexes screenshot images using filename, optional OCR text, and manual metadata.</td></tr>
+          <tr><td><strong>Metadata_Store</strong></td><td>Persisted structure (SQLite, CSV, or JSON) holding per-item metadata: topic, doc type, source file, section reference.</td></tr>
+          <tr><td><strong>Embedding_Component</strong></td><td>Converts text chunks into vector embeddings using a local sentence-transformers model.</td></tr>
+          <tr><td><strong>Vector_Index</strong></td><td>Searchable vector store (FAISS or Chroma) holding chunk embeddings and supporting similarity search.</td></tr>
+          <tr><td><strong>Retrieval_Component</strong></td><td>Embeds a query, searches the Vector_Index, and returns ranked matches.</td></tr>
+          <tr><td><strong>Answer_Drafter</strong></td><td>Composes a short answer draft grounded only in retrieved content.</td></tr>
+          <tr><td><strong>Search_Interface</strong></td><td>The Streamlit UI where a user enters a query and views results.</td></tr>
+          <tr><td><strong>Evaluation_Component</strong></td><td>Scripts that run sample queries and record retrieved outputs for the evaluation summary.</td></tr>
+          <tr><td><strong>Query_Category</strong></td><td>One of: onboarding, SOP lookup, screenshot lookup, policy reference, troubleshooting support.</td></tr>
+          <tr><td><strong>Confidence_Indicator</strong></td><td>A qualitative label — High, Medium, or Low — describing how well retrieved content supports the draft.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============ REQUIREMENTS ============ -->
+    <section id="requirements" class="section">
+      <h2>Functional Requirements</h2>
+      <p>Thirteen requirements written in EARS-style acceptance criteria drive the implementation.
+        Each is summarized below with its acceptance criteria.</p>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 1</span> Local Corpus Ingestion</h3>
+        <p><em>As an operations user, I want the Assistant to ingest a local folder of mixed training
+          content, so that scattered PDFs, notes, and screenshots become searchable together.</em></p>
+        <ol>
+          <li>Read PDF, TXT, Markdown, and image files (PNG, JPG, JPEG) from the folder and subfolders.</li>
+          <li>Load an optional CSV/JSON metadata file and associate entries with source files.</li>
+          <li>Skip unsupported extensions and record the skipped name in an ingestion log.</li>
+          <li>Skip unreadable/unparseable files, log a descriptive error, and continue.</li>
+          <li>Report counts of ingested documents, ingested screenshots, and skipped files.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 2</span> PDF Text Extraction &amp; Chunking</h3>
+        <ol>
+          <li>Extract text with the page number for each segment.</li>
+          <li>Divide extracted text into chunks not exceeding the configured maximum size.</li>
+          <li>Associate each chunk with its source file name and page reference.</li>
+          <li>A PDF with no extractable text is logged and produces zero chunks.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 3</span> Text Note Ingestion &amp; Chunking</h3>
+        <ol>
+          <li>Extract TXT/Markdown text and divide it into size-bounded chunks.</li>
+          <li>Associate each note chunk with its source file and a section reference where available.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 4</span> Screenshot Indexing</h3>
+        <ol>
+          <li>Record file name and file path as a Screenshot_Item.</li>
+          <li>When OCR is enabled and available, extract and store text from the image.</li>
+          <li>When manual metadata is provided, associate its topic tag and description.</li>
+          <li>When OCR is disabled/unavailable, index by file name and any manual metadata.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 5</span> Metadata Tagging &amp; Storage</h3>
+        <ol>
+          <li>Record topic tag, doc type, source file, and section/page reference per item.</li>
+          <li>Persist all metadata to a local file (SQLite, CSV, or JSON).</li>
+          <li>Load persisted metadata on startup without requiring re-ingestion.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 6</span> Local Embedding &amp; Vector Indexing</h3>
+        <ol>
+          <li>Produce embeddings using a local sentence-transformers model.</li>
+          <li>Generate embeddings without a GPU and without a paid cloud service.</li>
+          <li>Store each embedding with a reference to its chunk in a local FAISS/Chroma store.</li>
+          <li>Load a persisted index on startup without regenerating embeddings.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 7</span> Query Retrieval</h3>
+        <ol>
+          <li>Embed a non-empty query with the same model and search the index.</li>
+          <li>Return top matches ranked by similarity, limited to a configured maximum.</li>
+          <li>Return screenshot matches ranked by relevance using metadata and extracted text.</li>
+          <li>Reject empty queries with a prompt and perform no retrieval.</li>
+          <li>Return an empty result set with a no-match indicator below the similarity threshold.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 8</span> Query Categorization</h3>
+        <ol>
+          <li>Assign exactly one category from the fixed set of five.</li>
+          <li>Display the assigned category with the results.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 9</span> Source-Backed Answer Draft</h3>
+        <ol>
+          <li>Produce a draft of no more than 6 lines derived only from retrieved items.</li>
+          <li>Include references to the supporting source items.</li>
+          <li>On no matches, state that no supporting content was found and omit guidance.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 10</span> Result Presentation</h3>
+        <ol>
+          <li>For text matches: show title, page/section, source file, and a short excerpt.</li>
+          <li>For screenshot matches: show preview/filename, topic tag, and metadata/OCR text.</li>
+          <li>Display a Confidence_Indicator of High, Medium, or Low.</li>
+          <li>Display a suggested next step: use the source, review the file, or escalate.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 11</span> Low-Confidence Handling</h3>
+        <ol>
+          <li>Below the Medium threshold, set confidence to Low and suggest escalation.</li>
+          <li>While Low, limit the draft to retrieved content and indicate low confidence.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 12</span> Local Operation Without Paid Cloud</h3>
+        <ol>
+          <li>Ingest, index, and retrieve using local components without a GPU.</li>
+          <li>Perform core search and retrieval without a paid cloud service.</li>
+          <li>Fall back to grounded extraction when an optional model is unavailable.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Req 13</span> Evaluation With Sample Queries</h3>
+        <ol>
+          <li>Execute at least 20 predefined sample queries against the corpus.</li>
+          <li>Record text references, screenshot matches, category, and confidence per query.</li>
+          <li>Write recorded outputs to a local evaluation output file.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ DESIGN OVERVIEW ============ -->
+    <section id="design-overview" class="section">
+      <h2>Design Overview</h2>
+      <div class="card">
+        <p>
+          Built with Python and Streamlit, the system ingests a bounded corpus, builds a persistent
+          local index using sentence-transformers embeddings and a Chroma/FAISS vector store, and
+          presents source-backed answers. Every drafted answer is grounded strictly in retrieved
+          corpus content, with a qualitative confidence indicator and a suggested next step. Answer
+          drafting is optional and pluggable: when a local model (Ollama) or external API is
+          unavailable, the system falls back to a deterministic grounded-extractive draft.
+        </p>
+        <h3>Design Goals</h3>
+        <div class="grid-2">
+          <div class="info success"><strong>Local-first, zero paid dependency</strong> — all core
+            functionality runs on a CPU laptop (Req 6, 12).</div>
+          <div class="info"><strong>Persistence and reuse</strong> — restarts do not require
+            re-ingestion or re-embedding (Req 5.3, 6.4).</div>
+          <div class="info warn"><strong>Resilient ingestion</strong> — a single bad file never
+            aborts the pipeline (Req 1.3, 1.4, 2.4).</div>
+          <div class="info"><strong>Honest confidence</strong> — low-confidence results are
+            surfaced explicitly (Req 9.3, 11).</div>
+          <div class="info success"><strong>Reproducible evaluation</strong> — a scripted harness
+            runs ≥20 queries and writes structured outputs (Req 13).</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Key Technology Decisions</h3>
+        <table>
+          <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
+          <tbody>
+            <tr><td>Embedding model</td><td><code class="inline">all-MiniLM-L6-v2</code></td><td>384-dim, ~80MB, CPU-friendly; downloaded once and cached under <code class="inline">data/model/</code> for offline reuse (Req 6.1, 6.2).</td></tr>
+            <tr><td>Vector store</td><td>Chroma (default), FAISS-compatible</td><td>Built-in persistence, metadata filtering, and stable IDs. Abstract <code class="inline">VectorIndex</code> interface allows swapping to FAISS (Req 6.3, 6.4).</td></tr>
+            <tr><td>Metadata store</td><td>SQLite (+ JSON export)</td><td>Transactional persistence, indexed lookups, clean joins; single local file with no server (Req 5.2).</td></tr>
+            <tr><td>PDF extraction</td><td>PyMuPDF (<code class="inline">fitz</code>)</td><td>Per-page text extraction satisfies the page-reference requirement (Req 2.1, 2.3).</td></tr>
+            <tr><td>OCR</td><td>Optional <code class="inline">pytesseract</code>, off by default</td><td>Requires a system Tesseract binary; degrades gracefully to filename + manual metadata (Req 4.2–4.4).</td></tr>
+            <tr><td>Answer drafting</td><td>Pluggable + extractive fallback</td><td>Ollama/OpenAI backends with a default <code class="inline">ExtractiveDrafter</code> so the prototype works out of the box (Req 12.3).</td></tr>
+            <tr><td>Query categorization</td><td>Rule-based over 5 fixed categories</td><td>Keyword rules with an embedding-similarity tie-breaker; local and explainable (Req 8.1).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ ARCHITECTURE ============ -->
+    <section id="architecture" class="section">
+      <h2>Architecture</h2>
+      <p>The system has three runtime phases: <strong>Build (offline)</strong>,
+        <strong>Load (startup)</strong>, and <strong>Query (interactive)</strong>. Build is executed
+        by ingestion/indexing scripts; Load and Query happen inside the Streamlit app.</p>
+
+      <div class="card">
+        <h3>Phase Flow</h3>
+        <table>
+          <thead><tr><th style="width:150px;">Phase</th><th>Runs In</th><th>Responsibility</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-yellow">Build</span></td><td><code class="inline">scripts/build.py</code></td><td>Walk corpus → extract (PDF/notes/screenshots) → chunk → embed → upsert to Vector_Index + persist Metadata_Store + write ingestion log.</td></tr>
+            <tr><td><span class="badge badge-blue">Load</span></td><td>App startup</td><td>Load persisted vector index and metadata store into memory (cached with <code class="inline">@st.cache_resource</code>).</td></tr>
+            <tr><td><span class="badge badge-green">Query</span></td><td>Streamlit app</td><td>Categorize query → embed → search → threshold → rank → draft grounded answer → present sources, confidence, next step.</td></tr>
+            <tr><td><span class="badge badge-blue">Eval</span></td><td><code class="inline">scripts/evaluate.py</code></td><td>Run ≥20 sample queries through the retriever and write structured outputs.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Layering</h3>
+        <p>The design enforces separation between I/O, indexing, and presentation so the retrieval
+          logic can be tested in isolation:</p>
+        <ul>
+          <li><strong>Extraction layer</strong> (<code class="inline">ingestion/</code>) — file reading, PDF/text extraction, chunking, screenshot indexing. Pure transformations from file bytes to chunk/item objects.</li>
+          <li><strong>Index layer</strong> (<code class="inline">index/</code>) — embeddings + vector store + metadata store, wrapping external libraries behind narrow interfaces.</li>
+          <li><strong>Retrieval layer</strong> (<code class="inline">retrieval/</code>) — query embedding, similarity search, thresholding, categorization, answer drafting. The primary target of property-based tests, using an in-memory fake index.</li>
+          <li><strong>Presentation layer</strong> (<code class="inline">app.py</code>) — Streamlit UI, result rendering, confidence and next-step display.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ PROJECT STRUCTURE ============ -->
+    <section id="project-structure" class="section">
+      <h2>Project Structure</h2>
+      <div class="code-block">ai-training-assistant/
+├── app.py                      # Streamlit Search_Interface (entry point)
+├── config.py                   # Central config (thresholds, paths, chunk size, model)
+├── requirements.txt            # Streamlit + sentence-transformers + chromadb + pymupdf + ...
+├── src/
+│   ├── ingestion/
+│   │   ├── ingest.py           # Ingestion_Component orchestrator
+│   │   ├── pdf_extractor.py    # PDF_Extractor
+│   │   ├── note_reader.py      # TXT/MD reader
+│   │   ├── screenshot_indexer.py
+│   │   ├── chunker.py          # Chunking utility (shared by PDF + notes)
+│   │   └── metadata_loader.py  # Optional CSV/JSON metadata loader
+│   ├── index/
+│   │   ├── embedder.py         # Embedding_Component (sentence-transformers)
+│   │   ├── vector_index.py     # Vector_Index interface + Chroma impl
+│   │   └── metadata_store.py   # Metadata_Store (SQLite + JSON export)
+│   ├── retrieval/
+│   │   ├── retriever.py        # Retrieval_Component (search + threshold)
+│   │   ├── categorizer.py      # Query_Category classifier
+│   │   ├── drafter.py          # Answer_Drafter (Extractive + Ollama + OpenAI)
+│   │   └── confidence.py       # Confidence_Indicator + next-step logic
+│   └── models.py               # Dataclasses: TextChunk, ScreenshotItem, ...
+├── scripts/
+│   ├── build.py                # Full ingestion + indexing pipeline (CLI)
+│   └── evaluate.py             # Evaluation_Component harness (CLI)
+├── data/
+│   ├── documents/corpus/       # Source content
+│   ├── chroma_store/           # Persisted Chroma vector index
+│   ├── metadata.db             # SQLite Metadata_Store
+│   ├── metadata.json           # Human-readable metadata export
+│   ├── logs/ingestion.log      # Ingestion log
+│   └── model/                  # Cached embedding model
+└── tests/
+    ├── test_chunker.py
+    ├── test_retriever.py
+    ├── test_categorizer.py
+    ├── test_drafter.py
+    ├── test_metadata_roundtrip.py
+    └── conftest.py             # Generators / fixtures</div>
+    </section>
+
+    <!-- ============ INTERFACES ============ -->
+    <section id="interfaces" class="section">
+      <h2>Components &amp; Interfaces</h2>
+      <p>Interfaces are expressed as Python type signatures (Protocols / dataclasses).</p>
+
+      <div class="card">
+        <h3>Ingestion_Component</h3>
+        <p><code class="inline">ingest_folder</code> never raises on a single-file failure; it records
+          a <code class="inline">SkippedEntry(name, reason)</code> and continues (Req 1.4).</p>
+        <div class="code-block">class IngestionComponent:
+    def ingest_folder(self, folder_path: str) -> IngestionResult: ...
+
+@dataclass
+class IngestionResult:
+    text_chunks: list[TextChunk]
+    screenshot_items: list[ScreenshotItem]
+    ingested_doc_count: int          # Req 1.5
+    ingested_screenshot_count: int
+    skipped: list[SkippedEntry]      # unsupported ext + parse failures</div>
+      </div>
+
+      <div class="card">
+        <h3>PDF_Extractor &amp; Chunker</h3>
+        <p>If a PDF yields no extractable text, the extractor returns an empty list; the orchestrator
+          logs "no extractable text" and produces zero chunks (Req 2.4). Chunking is size-bounded,
+          splitting on paragraph/sentence boundaries and hard-splitting only when a single unit
+          exceeds the limit.</p>
+        <div class="code-block">class PdfExtractor:
+    def extract(self, path: str) -> list[PageText]: ...   # Req 2.1
+
+@dataclass
+class PageText:
+    page_number: int    # 1-based
+    text: str
+
+class Chunker:
+    def __init__(self, max_chunk_size: int, overlap: int = 0): ...
+    def chunk(self, text: str) -> list[str]: ...          # Req 2.2, 3.1</div>
+      </div>
+
+      <div class="card">
+        <h3>Screenshot_Indexer &amp; Metadata_Loader</h3>
+        <div class="code-block">class ScreenshotIndexer:
+    def __init__(self, ocr_enabled: bool = False): ...
+    def index(self, path: str, manual_meta: ScreenshotMeta | None) -> ScreenshotItem: ...
+
+class MetadataLoader:
+    def load(self, folder_path: str) -> dict[str, ItemMeta]: ...   # Req 1.2</div>
+      </div>
+
+      <div class="card">
+        <h3>Embedding_Component &amp; Vector_Index</h3>
+        <p>Cosine similarity is normalized to <code class="inline">[0, 1]</code> so thresholds
+          (Req 7.5, 11.1) are stable across backends.</p>
+        <div class="code-block">class Embedder:
+    def embed(self, texts: list[str]) -> list[list[float]]: ...    # Req 6.1, 6.2
+    def embed_query(self, query: str) -> list[float]: ...          # Req 7.1
+
+class VectorIndex(Protocol):
+    def upsert(self, entries: list[IndexEntry]) -> None: ...       # Req 6.3
+    def search(self, query_vec: list[float], top_k: int) -> list[Match]: ...  # Req 7.2
+    def persist(self) -> None: ...                                 # Req 6.3
+    @classmethod
+    def load(cls, path: str) -> "VectorIndex": ...                 # Req 6.4</div>
+      </div>
+
+      <div class="card">
+        <h3>Retrieval_Component</h3>
+        <div class="code-block">class Retriever:
+    def retrieve(self, query: str) -> RetrievalOutcome: ...   # Req 7.1-7.5, 8.1
+
+@dataclass
+class RetrievalOutcome:
+    query: str
+    category: QueryCategory              # Req 8.1
+    text_matches: list[TextMatch]        # ranked, above threshold
+    screenshot_matches: list[ScreenshotMatch]
+    confidence: Confidence               # High | Medium | Low
+    no_match: bool                       # Req 7.5</div>
+      </div>
+
+      <div class="card">
+        <h3>Answer_Drafter (strategy)</h3>
+        <p><code class="inline">OllamaDrafter</code> / <code class="inline">OpenAIDrafter</code> catch
+          connection/availability errors and the caller falls back to
+          <code class="inline">ExtractiveDrafter</code> (Req 12.3). All drafters produce text derived
+          only from the outcome; on no-match they return a "no supporting content found" statement
+          with no guidance (Req 9.3).</p>
+        <div class="code-block">class AnswerDrafter(Protocol):
+    def draft(self, outcome: RetrievalOutcome) -> AnswerDraft: ...
+
+class ExtractiveDrafter:   # default, no external deps (Req 12.3 fallback)
+class OllamaDrafter:       # optional local LLM
+class OpenAIDrafter:       # optional external API
+
+@dataclass
+class AnswerDraft:
+    text: str                  # <= 6 lines, grounded only in retrieved items (Req 9.1)
+    sources: list[SourceRef]   # Req 9.2
+    low_confidence_note: bool  # Req 11.2</div>
+      </div>
+    </section>
+
+    <!-- ============ DATA MODELS ============ -->
+    <section id="data-models" class="section">
+      <h2>Data Models</h2>
+      <div class="card">
+        <div class="code-block">class DocType(str, Enum):
+    PDF = "pdf"; NOTE = "note"; SCREENSHOT = "screenshot"
+
+class QueryCategory(str, Enum):
+    ONBOARDING = "onboarding"
+    SOP_LOOKUP = "sop_lookup"
+    SCREENSHOT_LOOKUP = "screenshot_lookup"
+    POLICY_REFERENCE = "policy_reference"
+    TROUBLESHOOTING = "troubleshooting_support"
+
+class Confidence(str, Enum):
+    HIGH = "High"; MEDIUM = "Medium"; LOW = "Low"
+
+@dataclass(frozen=True)
+class TextChunk:
+    chunk_id: str            # f"{source_file}::{page_or_section}::{ordinal}"
+    text: str
+    source_file: str         # Req 2.3, 3.2, 5.1
+    doc_type: DocType        # Req 5.1
+    page_reference: int | None      # Req 2.1, 2.3
+    section_reference: str | None   # Req 3.2
+    topic_tag: str | None    # Req 5.1
+    title: str | None        # Req 10.1
+
+@dataclass(frozen=True)
+class ScreenshotItem:
+    item_id: str; file_name: str; file_path: str
+    topic_tag: str | None; description: str | None
+    ocr_text: str | None     # None when OCR disabled/unavailable
+    doc_type: DocType = DocType.SCREENSHOT</div>
+      </div>
+
+      <div class="card">
+        <h3>Metadata Store Schema (SQLite)</h3>
+        <div class="code-block">CREATE TABLE chunks (
+    chunk_id TEXT PRIMARY KEY,
+    text TEXT NOT NULL,
+    source_file TEXT NOT NULL,
+    doc_type TEXT NOT NULL,
+    page_reference INTEGER,
+    section_reference TEXT,
+    topic_tag TEXT,
+    title TEXT
+);
+CREATE TABLE screenshots (
+    item_id TEXT PRIMARY KEY,
+    file_name TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    topic_tag TEXT,
+    description TEXT,
+    ocr_text TEXT
+);
+CREATE INDEX idx_chunks_source ON chunks(source_file);</div>
+      </div>
+    </section>
+
+    <!-- ============ CONFIG ============ -->
+    <section id="config" class="section">
+      <h2>Configuration Defaults</h2>
+      <table>
+        <thead><tr><th>Setting</th><th>Default</th><th>Requirement</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">EMBEDDING_MODEL</code></td><td>all-MiniLM-L6-v2</td><td>6.1</td></tr>
+          <tr><td><code class="inline">MAX_CHUNK_SIZE</code></td><td>800 chars</td><td>2.2, 3.1</td></tr>
+          <tr><td><code class="inline">CHUNK_OVERLAP</code></td><td>100 chars</td><td>2.2</td></tr>
+          <tr><td><code class="inline">TOP_K</code></td><td>5</td><td>7.2</td></tr>
+          <tr><td><code class="inline">MIN_SIMILARITY</code></td><td>0.30</td><td>7.5</td></tr>
+          <tr><td><code class="inline">MEDIUM_CONFIDENCE_THRESHOLD</code></td><td>0.45</td><td>11.1</td></tr>
+          <tr><td><code class="inline">HIGH_CONFIDENCE_THRESHOLD</code></td><td>0.65</td><td>10.3</td></tr>
+          <tr><td><code class="inline">OCR_ENABLED</code></td><td>False</td><td>4.4</td></tr>
+          <tr><td><code class="inline">ANSWER_MODEL</code></td><td>extractive</td><td>12.3</td></tr>
+          <tr><td><code class="inline">ANSWER_MAX_LINES</code></td><td>6</td><td>9.1</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============ PROPERTIES ============ -->
+    <section id="properties" class="section">
+      <h2>Correctness Properties</h2>
+      <p>Fourteen properties formalize what the system must do across all valid executions. Each is
+        validated by a property-based test using <code class="inline">hypothesis</code>.</p>
+      <table>
+        <thead><tr><th style="width:60px;">#</th><th>Property</th><th style="width:150px;">Validates</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>Ingestion partitions input files — supported text → doc count, screenshots → screenshot count, unsupported → skipped; counts + skipped equal total files walked.</td><td><span class="badge badge-green">Req 1.1, 1.3, 1.5</span></td></tr>
+          <tr><td><strong>2</strong></td><td>Ingestion is resilient to per-file failures — an arbitrary failing subset never raises; each failing file is skipped with a reason; good files still produce items.</td><td><span class="badge badge-green">Req 1.4</span></td></tr>
+          <tr><td><strong>3</strong></td><td>Chunk size is bounded — every chunk length ≤ N, and concatenation of chunks (ignoring overlap) covers the non-whitespace content.</td><td><span class="badge badge-green">Req 2.2, 3.1</span></td></tr>
+          <tr><td><strong>4</strong></td><td>Every chunk carries provenance — non-empty source_file, plus page_reference (PDF) or section_reference (note heading).</td><td><span class="badge badge-green">Req 2.3, 3.2</span></td></tr>
+          <tr><td><strong>5</strong></td><td>Screenshot indexing preserves identity and applies metadata — records file_name/file_path; applies topic/description; ocr_text None when disabled.</td><td><span class="badge badge-green">Req 1.2, 4.1, 4.3, 4.4</span></td></tr>
+          <tr><td><strong>6</strong></td><td>Metadata store round-trip — persist then reload yields items equal across all recorded fields.</td><td><span class="badge badge-green">Req 5.1, 5.2, 5.3</span></td></tr>
+          <tr><td><strong>7</strong></td><td>Retrieval ranking, limit, and reference consistency — matches ordered by descending score, at most top_k, every id resolves to a stored item.</td><td><span class="badge badge-green">Req 6.3, 7.1, 7.2, 7.3</span></td></tr>
+          <tr><td><strong>8</strong></td><td>Below-threshold retrieval yields a no-match result — empty match sets and no_match=true when nothing reaches min_similarity.</td><td><span class="badge badge-green">Req 7.5</span></td></tr>
+          <tr><td><strong>9</strong></td><td>Query categorization is total and single-valued — returns exactly one member of the fixed category set for any query.</td><td><span class="badge badge-green">Req 8.1</span></td></tr>
+          <tr><td><strong>10</strong></td><td>Empty queries are rejected without retrieval — whitespace-only/empty queries return the prompt and never call the retriever.</td><td><span class="badge badge-green">Req 7.4</span></td></tr>
+          <tr><td><strong>11</strong></td><td>Confidence and next-step mapping — exactly one confidence label, monotonic in s per thresholds; Low ⇒ escalate next step.</td><td><span class="badge badge-green">Req 10.3, 10.4, 11.1</span></td></tr>
+          <tr><td><strong>12</strong></td><td>Answer drafts are grounded — ≤ 6 lines; matches ⇒ non-empty sources from actual items; no-match ⇒ no sources/guidance; Low ⇒ low_confidence_note true.</td><td><span class="badge badge-green">Req 9.1, 9.2, 9.3, 11.2</span></td></tr>
+          <tr><td><strong>13</strong></td><td>Answer drafting falls back to grounded extraction — when the primary drafter is unavailable/raises, a valid extractive draft is returned instead of an error.</td><td><span class="badge badge-green">Req 12.3</span></td></tr>
+          <tr><td><strong>14</strong></td><td>Evaluation output is complete — exactly one output record per query, each with text references, screenshot matches, category, and confidence.</td><td><span class="badge badge-green">Req 13.2</span></td></tr>
+        </tbody>
+      </table>
+      <div class="info">
+        Environment constraints (Req 6.2, 12.1, 12.2), external-library / file-I/O behavior
+        (Req 2.1, 4.2, 6.1, 6.4, 13.3), and UI rendering (Req 8.2, 10.1, 10.2) are covered by
+        smoke, example, and integration tests rather than by properties.
+      </div>
+    </section>
+
+    <!-- ============ ERROR HANDLING ============ -->
+    <section id="error-handling" class="section">
+      <h2>Error Handling</h2>
+      <p>The system favors graceful degradation over aborting — a single malformed file or an
+        unavailable optional model must not break the prototype.</p>
+
+      <div class="card">
+        <h3>Ingestion Errors</h3>
+        <table>
+          <thead><tr><th>Condition</th><th>Handling</th><th style="width:90px;">Req</th></tr></thead>
+          <tbody>
+            <tr><td>Unsupported file extension</td><td>Skip file, add <code class="inline">SkippedEntry(name, "unsupported_extension")</code>, continue</td><td>1.3</td></tr>
+            <tr><td>Supported file fails to open/parse</td><td>Catch exception, log <code class="inline">SkippedEntry(name, str(error))</code>, continue</td><td>1.4</td></tr>
+            <tr><td>PDF has no extractable text</td><td>Log "no extractable text", produce zero chunks (not an error)</td><td>2.4</td></tr>
+            <tr><td>Optional metadata file absent</td><td>Proceed with empty metadata map (not an error)</td><td>1.2</td></tr>
+            <tr><td>Optional metadata file malformed</td><td>Log a warning, proceed without enrichment</td><td>1.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Index / Embedding Errors</h3>
+        <table>
+          <thead><tr><th>Condition</th><th>Handling</th></tr></thead>
+          <tbody>
+            <tr><td>Embedding model missing from cache and offline</td><td>Fail fast at build with a clear message: run <code class="inline">scripts/build.py</code> while online once to cache the model.</td></tr>
+            <tr><td>Vector store directory missing at startup</td><td>App reports "index not built" and directs the user to run <code class="inline">scripts/build.py</code>; does not crash.</td></tr>
+            <tr><td>Corrupt/partial persisted index</td><td>Log error and instruct rebuild; do not silently return wrong results.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Query-Time Errors</h3>
+        <table>
+          <thead><tr><th>Condition</th><th>Handling</th><th style="width:90px;">Req</th></tr></thead>
+          <tbody>
+            <tr><td>Empty/whitespace query</td><td>Show prompt, skip retrieval</td><td>7.4</td></tr>
+            <tr><td>No matches above threshold</td><td>Return <code class="inline">no_match</code> outcome; drafter emits "no supporting content found"</td><td>7.5, 9.3</td></tr>
+            <tr><td>Primary answer model unavailable</td><td>Catch connection/timeout error, fall back to <code class="inline">ExtractiveDrafter</code></td><td>12.3</td></tr>
+            <tr><td>OCR requested but Tesseract absent</td><td>Log once, treat OCR as disabled, index by filename + manual metadata</td><td>4.4</td></tr>
+          </tbody>
+        </table>
+        <div class="info">Index and metadata are loaded once and cached with
+          <code class="inline">@st.cache_resource</code>. Load failures surface a friendly error
+          banner rather than a stack trace.</div>
+      </div>
+    </section>
+
+    <!-- ============ TESTING ============ -->
+    <section id="testing" class="section">
+      <h2>Testing Strategy</h2>
+      <p>The strategy combines property-based tests for input-varying logic with example,
+        integration, and smoke tests for external dependencies and UI. Retrieval, chunking,
+        categorization, confidence, and drafting logic are tested in isolation using an in-memory
+        fake <code class="inline">VectorIndex</code> and a deterministic fake
+        <code class="inline">Embedder</code>, so tests run fast on CPU without loading the real model.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3><span class="badge badge-blue">Property-Based</span></h3>
+          <ul>
+            <li>Library: <code class="inline">hypothesis</code> (not hand-rolled).</li>
+            <li>Min 100 examples: <code class="inline">@settings(max_examples=100, deadline=None)</code>.</li>
+            <li>One test per Correctness Property (1–14).</li>
+            <li>Tagged <code class="inline"># Feature: internal-training-content-search, Property N</code>.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="badge badge-green">Example-Based</span></h3>
+          <ul>
+            <li>PDF page-number association on fixture PDFs (Req 2.1) + empty-PDF path (Req 2.4).</li>
+            <li>Embedding shape/determinism: 384-dim vector, stable output (Req 6.1).</li>
+            <li>Render-helper completeness for text and screenshot payloads (Req 10.1, 10.2).</li>
+            <li>Category label appears in the rendered payload (Req 8.2).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="badge badge-yellow">Integration</span></h3>
+          <ul>
+            <li>Build → persist → reload → query, asserting identical top-k results (Req 6.4).</li>
+            <li>Optional OCR path against a fixture image, auto-skipped without Tesseract (Req 4.2).</li>
+            <li>Evaluation harness end-to-end writing an output file (Req 13.3).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="badge badge-red">Smoke</span></h3>
+          <ul>
+            <li>CPU-only build and query with no GPU (Req 6.2, 12.1).</li>
+            <li>Default <code class="inline">ANSWER_MODEL=extractive</code>, no network (Req 12.2).</li>
+            <li>Sample-query set contains at least 20 queries (Req 13.1).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info warn">
+        <strong>Execution notes:</strong> Run once (not watch mode) via
+        <code class="inline">pytest -q</code>. Real-model and OCR tests are marked
+        <code class="inline">@pytest.mark.slow</code> / <code class="inline">@pytest.mark.ocr</code>
+        and skip gracefully when resources are unavailable.
+      </div>
+    </section>
+
+    <!-- ============ ENHANCEMENTS ============ -->
+    <section id="enhancements" class="section">
+      <h2>Post-Build Enhancements</h2>
+      <p>After the core build satisfied all 13 functional requirements and 14 correctness
+        properties, the following enhancements were added to improve usability, retrieval
+        quality, and answer presentation. All 109 tests continue to pass with these changes.</p>
+
+      <div class="card">
+        <h3><span class="badge badge-green">UX</span> Conversational Chat Interface</h3>
+        <p>The single-query search box was upgraded to a full chat interface using
+          <code class="inline">st.chat_input</code> and <code class="inline">st.chat_message</code>.
+          Conversation history is preserved in <code class="inline">st.session_state</code>, so users
+          can review previous questions and answers and ask follow-up questions in sequence. A
+          sidebar <strong>"Clear history"</strong> button resets the conversation.</p>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-green">UX</span> Streaming &amp; Readable Formatting</h3>
+        <ul>
+          <li><strong>Streaming answers</strong> — responses render word-by-word via
+            <code class="inline">st.write_stream</code> for a natural typing effect.</li>
+          <li><strong>Adaptive markdown formatting</strong> — raw extractive text is reformatted
+            based on its structure: section labels (e.g. "Viewer:", "Processor:") become bold
+            headers, bullet-like content becomes clean lists, and paragraph text is preserved as
+            prose instead of forcing everything into bullets.</li>
+          <li><strong>Column layout</strong> — confidence, next step, and category are shown side
+            by side with dividers for clarity.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Retrieval</span> Screenshot Embedding in the Vector Index</h3>
+        <p>Originally screenshots were saved only to the metadata store and were not semantically
+          searchable. The build pipeline now embeds each screenshot's <code class="inline">topic_tag</code>,
+          <code class="inline">description</code>, and any OCR text into the vector index alongside
+          text chunks, so screenshot-focused queries reliably return the relevant image. A populated
+          <code class="inline">metadata.json</code> in the corpus supplies rich descriptions for each
+          screenshot.</p>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Retrieval</span> Ranking &amp; Categorization Quality</h3>
+        <ul>
+          <li><strong>Meta-document exclusion</strong> — <code class="inline">internal_search_use_cases.md</code>
+            (a list of example questions) was matching almost every query. It is now excluded via a
+            configurable <code class="inline">EXCLUDE_FILES</code> setting so real training content
+            ranks first.</li>
+          <li><strong>Source deduplication</strong> — only the highest-scored chunk per source file
+            is returned, giving more diverse results instead of the same file repeated.</li>
+          <li><strong>Expanded categorizer keywords</strong> — domain-specific terms (access, approval,
+            escalation, refund, filter, quality) were added, and matching now scores by hit count so
+            the best-fitting category wins. Fixes prior mislabeling (e.g. access queries tagged as
+            "Screenshot Lookup").</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-yellow">Reliability</span> Tuned Confidence Thresholds</h3>
+        <p>Empirical scoring showed on-topic queries score ~0.77–0.87 while off-topic queries
+          (e.g. "payroll", "weather") score ~0.54–0.67. Thresholds were tuned to separate these
+          cleanly:</p>
+        <table>
+          <thead><tr><th>Setting</th><th>Spec Default</th><th>Tuned (.env)</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">MIN_SIMILARITY</code></td><td>0.30</td><td>0.68</td></tr>
+            <tr><td><code class="inline">MEDIUM_CONFIDENCE_THRESHOLD</code></td><td>0.45</td><td>0.72</td></tr>
+            <tr><td><code class="inline">HIGH_CONFIDENCE_THRESHOLD</code></td><td>0.65</td><td>0.78</td></tr>
+          </tbody>
+        </table>
+        <p>Off-topic queries now correctly return a no-match instead of confidently returning
+          irrelevant results. Spec defaults remain in <code class="inline">config.py</code>; the
+          tuned values live in <code class="inline">.env</code>.</p>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-yellow">Reliability</span> No-Match &amp; Low-Confidence Fallback Guidance</h3>
+        <p>When no content clears the threshold, the app shows actionable next steps: rephrase the
+          query, review the list of available corpus topics, escalate to the operations lead, or
+          request that content be added. Low-confidence results display a similar guidance block so
+          users know to verify against the original sources.</p>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-blue">Config</span> Full <code class="inline">.env</code> Configuration</h3>
+        <p>Every setting (model, chunking, retrieval, thresholds, answer model, and all data paths)
+          is now overridable through a documented <code class="inline">.env</code> file loaded via
+          <code class="inline">python-dotenv</code>, with the spec defaults as fallbacks.</p>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-green">Ops</span> Environment &amp; Documentation</h3>
+        <ul>
+          <li><strong>Streamlit config</strong> — a <code class="inline">.streamlit/config.toml</code>
+            disables the file watcher to stop it from scanning hundreds of unused
+            <code class="inline">transformers</code> vision modules that made the app hang.</li>
+          <li><strong>Dependency pin</strong> — <code class="inline">transformers</code> pinned to a
+            stable 4.x line to avoid the vision-module bloat in 5.x.</li>
+          <li><strong>README</strong> — added step-by-step run instructions, configuration table,
+            project structure, and optional OCR / LLM setup.</li>
+          <li><strong>Filled evaluation template</strong> — all 20 sample queries executed with
+            recorded sources, relevance scores, grounding, screenshot presence, and confidence
+            (average relevance 4.1/5, 100% grounded, 90% screenshot return).</li>
+        </ul>
+      </div>
+
+      <div class="info success">
+        <strong>Impact:</strong> The two originally-failing screenshot queries (Q003, Q009) now
+        return the expected PNG, category labels are accurate, off-topic queries are correctly
+        rejected, and answers are presented in a readable, conversational format — all while the
+        full property-based and example test suite (109 tests) continues to pass.
+      </div>
+    </section>
+
+  </div><!-- /content -->
+
+  <footer>
+    <div class="metrics">
+      <div class="metric"><strong>13</strong>Functional Requirements</div>
+      <div class="metric"><strong>14</strong>Correctness Properties</div>
+      <div class="metric"><strong>109</strong>Passing Tests</div>
+      <div class="metric"><strong>4.1/5</strong>Avg. Retrieval Relevance</div>
+    </div>
+    <p>Internal Training Content Search Assistant &middot; Capstone Prototype (20-day cycle)</p>
+    <p>Local-first retrieval over PDFs, notes, and screenshots &mdash; source-backed, CPU-only,
+      no paid cloud.</p>
+  </footer>
+</div><!-- /main -->
+
+<script>
+  // Mobile sidebar toggle
+  const toggle = document.querySelector(".menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
+  toggle.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+  // Close sidebar on nav click (mobile) and enable smooth scroll
+  const navLinks = document.querySelectorAll(".sidebar nav a");
+  navLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      if (window.innerWidth <= 860) sidebar.classList.remove("open");
+    });
+  });
+
+  // Active link highlighting on scroll
+  const sections = Array.from(document.querySelectorAll(".section"));
+  const linkFor = (id) => document.querySelector(`.sidebar nav a[href="#${id}"]`);
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          navLinks.forEach((l) => l.classList.remove("active"));
+          const active = linkFor(entry.target.id);
+          if (active) active.classList.add("active");
+        }
+      });
+    },
+    { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+  );
+
+  sections.forEach((section) => observer.observe(section));
+</script>
+</body>
+</html>

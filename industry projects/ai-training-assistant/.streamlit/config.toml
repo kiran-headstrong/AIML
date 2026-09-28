@@ -1,0 +1,17 @@
+[server]
+# Disable the file watcher to prevent Streamlit from scanning every
+# module in the transformers package (hundreds of vision model modules)
+# on startup. Without this, the app hangs and floods the terminal with
+# "[transformers] Accessing __path__" warnings.
+#
+# Trade-off: code changes won't auto-reload. Restart the app manually
+# after editing code (Ctrl+C then re-run streamlit run app.py).
+fileWatcherType = "none"
+
+# Increase timeouts so the embedding model has time to load on the
+# first query without the websocket disconnecting.
+maxMessageSize = 200
+enableWebsocketCompression = false
+
+[browser]
+gatherUsageStats = false

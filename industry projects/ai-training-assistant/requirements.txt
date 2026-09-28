@@ -1,0 +1,33 @@
+# Internal Training Content Search Assistant — dependencies
+# Local-first, CPU-only, no paid cloud services.
+
+# Streamlit search interface (Search_Interface)
+streamlit
+
+# Local embedding model (Embedding_Component)
+sentence-transformers
+
+# Persistent local vector store (Vector_Index)
+chromadb
+
+# PDF text + per-page extraction (PDF_Extractor)
+pymupdf
+
+# Data handling for metadata/evaluation I/O
+pandas
+
+# Image handling for screenshots (Screenshot_Indexer)
+pillow
+
+# Property-based testing (Correctness Properties 1-14)
+hypothesis
+
+# Example / integration / smoke tests
+pytest
+
+# Environment-variable / .env configuration overrides
+python-dotenv
+
+# Optional OCR for screenshots — requires a system Tesseract binary.
+# Enable OCR_ENABLED=True and install this to extract screenshot text.
+# pytesseract

@@ -1,0 +1,62 @@
+[
+  {
+    "image_id": "IMG-001",
+    "file_path": "screenshots/dashboard_filter_setup.png",
+    "title": "Saved Filter Setup - Queue Monitoring",
+    "topic": "dashboard_filter_setup",
+    "screen_area": "filter_drawer, save_filter_panel, result_grid",
+    "manual_text": "Queue Refund Exceptions; Status Pending Review; Created Date Last 30 days; Save filter naming convention; Visibility Workgroup only; Screenshot evidence should include filter drawer and result count.",
+    "related_documents": "documents/notes/dashboard_filter_setup.md; documents/notes/training_content_index.md",
+    "suggested_queries": "Where is the filter drawer located? | What should be visible in a screenshot attached for supervisor review?"
+  },
+  {
+    "image_id": "IMG-002",
+    "file_path": "screenshots/approval_queue_status.png",
+    "title": "Approval Queue Status View",
+    "topic": "approval_escalation",
+    "screen_area": "queue_status, escalation_note, timeline",
+    "manual_text": "Request age one business day; status waiting on evidence; escalation reason pending more than one business day and blocker unclear; assign supervisor review.",
+    "related_documents": "documents/pdfs/Approval_Escalation_Process.pdf",
+    "suggested_queries": "Show approval screenshot for items pending more than one business day. | When is L2 supervisor review used?"
+  },
+  {
+    "image_id": "IMG-003",
+    "file_path": "screenshots/refund_exception_form.png",
+    "title": "Refund Exception Intake Form",
+    "topic": "refund_exception_handling",
+    "screen_area": "required_fields, exception_type, coordinator_summary",
+    "manual_text": "Account reference; refund amount; invoice transaction ID; exception reason; evidence status; policy override; supervisor review; do not promise refund approval.",
+    "related_documents": "documents/pdfs/Refund_Exception_Handling_Guide.pdf",
+    "suggested_queries": "Which screenshot shows refund exception required fields? | What should not be promised in a refund exception routing note?"
+  },
+  {
+    "image_id": "IMG-004",
+    "file_path": "screenshots/user_access_role_mapping.png",
+    "title": "User Access Role Mapping",
+    "topic": "access_request_routing",
+    "screen_area": "requested_role, routing_rule, expiry_reminder",
+    "manual_text": "Requested role Reviewer; manager approval attached; Reviewer access requires supervisor review; temporary access requires expiry date in routing note.",
+    "related_documents": "documents/pdfs/Ops_Onboarding_Access_Requests.pdf; documents/notes/user_role_matrix.txt",
+    "suggested_queries": "Which access role requires supervisor review? | When does temporary access need expiry?"
+  },
+  {
+    "image_id": "IMG-005",
+    "file_path": "screenshots/quality_review_checklist.png",
+    "title": "Monthly Quality Review Checklist",
+    "topic": "quality_review",
+    "screen_area": "review_sample, quality_checks, escalation_rule",
+    "manual_text": "Review sample includes access requests, refund exceptions, approval escalations, manual account corrections, dashboard setup support; escalate if same error pattern appears in three or more records from same queue.",
+    "related_documents": "documents/notes/monthly_quality_review_sop.md",
+    "suggested_queries": "What fields should be checked during monthly quality review? | When should repeated error patterns be escalated?"
+  },
+  {
+    "image_id": "IMG-006",
+    "file_path": "screenshots/kb_search_result_mock.png",
+    "title": "Search Assistant Result Example",
+    "topic": "prototype_ui_reference",
+    "screen_area": "query, expected_result_layout",
+    "manual_text": "Expected result layout includes short answer draft, top text sources, screenshot matches, confidence indicator, and suggested next step.",
+    "related_documents": "documents/notes/internal_search_use_cases.md",
+    "suggested_queries": "What should the Streamlit result screen show?"
+  }
+]

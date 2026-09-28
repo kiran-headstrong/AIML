@@ -1,0 +1,236 @@
+Loading resources...
+Resources loaded.
+Warming up model...
+Model ready.
+
+Running 20 test queries...
+
+==========================================================================================
+
+Q001: PASS
+  Query: Which access role requires supervisor review?
+  Expected sources: ['Ops_Onboarding_Access_Requests.pdf', 'user_role_matrix.txt']
+  Actual text (top-3): ['Ops_Onboarding_Access_Requests.pdf', 'internal_search_use_cases.md', 'user_role_matrix.txt']
+  Actual screenshots: []
+  Found: ['Ops_Onboarding_Access_Requests.pdf', 'user_role_matrix.txt'] | Missing: []
+  Confidence: High | Category: Screenshot Lookup
+  Answer: •
+Requested role type such as Viewer, Processor, Reviewer, or Team Lead.•
+Manager approval note or ticket reference. •
+Business purpose and expected a
+
+Q002: PASS
+  Query: What information is required before routing a user access request?
+  Expected sources: ['Ops_Onboarding_Access_Requests.pdf']
+  Actual text (top-3): ['internal_search_use_cases.md', 'Ops_Onboarding_Access_Requests.pdf', 'internal_search_use_cases.md']
+  Actual screenshots: []
+  Found: ['Ops_Onboarding_Access_Requests.pdf'] | Missing: []
+  Confidence: High | Category: Screenshot Lookup
+  Answer: - What information is required before routing a user access request?
+- Which access role requires supervisor review?
+- When should temporary access in
+
+Q003: FAIL
+  Query: Show screenshot evidence for reviewer access routing.
+  Expected sources: ['user_access_role_mapping.png']
+  Actual text (top-3): ['user_role_matrix.txt', 'Ops_Onboarding_Access_Requests.pdf', 'dashboard_filter_setup.md']
+  Actual screenshots: []
+  Found: [] | Missing: ['user_access_role_mapping.png']
+  Confidence: High | Category: Screenshot Lookup
+  Answer: r review.
+- Can return items for correction.
+- Requires manager approval and business justification.Team Lead:
+- Can reassign owners, approve selected
+
+Q004: PASS
+  Query: When should an approval item move to L2 supervisor review?
+  Expected sources: ['Approval_Escalation_Process.pdf', 'approval_queue_status.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'Approval_Escalation_Process.pdf', 'Approval_Escalation_Process.pdf']
+  Actual screenshots: []
+  Found: ['Approval_Escalation_Process.pdf'] | Missing: ['approval_queue_status.png']
+  Confidence: High | Category: SOP Lookup
+  Answer: - When does an approval item move from L1 follow-up to supervisor review?
+- What should be included in an escalation note?
+- When should a request be 
+
+Q005: PASS
+  Query: What should be included in an escalation note?
+  Expected sources: ['Approval_Escalation_Process.pdf']
+  Actual text (top-3): ['Approval_Escalation_Process.pdf', 'Refund_Exception_Handling_Guide.pdf', 'internal_search_use_cases.md']
+  Actual screenshots: []
+  Found: ['Approval_Escalation_Process.pdf'] | Missing: []
+  Confidence: High | Category: SOP Lookup
+  Answer: working hours Add follow-up note and notify queue owner.L2 supervisor review
+Item pending more than 1 business day or blocker unclear
+Summarize issue,
+
+Q006: PASS
+  Query: When should the approval queue be marked manual freeze?
+  Expected sources: ['Approval_Escalation_Process.pdf']
+  Actual text (top-3): ['internal_search_use_cases.md', 'Approval_Escalation_Process.pdf', 'Approval_Escalation_Process.pdf']
+  Actual screenshots: []
+  Found: ['Approval_Escalation_Process.pdf'] | Missing: []
+  Confidence: High | Category: Policy Reference
+  Answer: - When does an approval item move from L1 follow-up to supervisor review?
+- What should be included in an escalation note?
+- When should a request be 
+
+Q007: PASS
+  Query: Which refund exception category needs finance ops validation?
+  Expected sources: ['Refund_Exception_Handling_Guide.pdf']
+  Actual text (top-3): ['internal_search_use_cases.md', 'Refund_Exception_Handling_Guide.pdf', 'Refund_Exception_Handling_Guide.pdf']
+  Actual screenshots: []
+  Found: ['Refund_Exception_Handling_Guide.pdf'] | Missing: []
+  Confidence: High | Category: Policy Reference
+  Answer: - Which refund requests require finance ops validation?
+- What is the minimum information required for a refund exception?
+- What should not be promis
+
+Q008: PASS
+  Query: What should a refund exception summary include?
+  Expected sources: ['Refund_Exception_Handling_Guide.pdf', 'refund_exception_form.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'Refund_Exception_Handling_Guide.pdf', 'Refund_Exception_Handling_Guide.pdf']
+  Actual screenshots: []
+  Found: ['Refund_Exception_Handling_Guide.pdf'] | Missing: ['refund_exception_form.png']
+  Confidence: High | Category: Policy Reference
+  Answer: - Which refund requests require finance ops validation?
+- What is the minimum information required for a refund exception?
+- What should not be promis
+
+Q009: FAIL
+  Query: Find screenshots related to refund exception required fields.
+  Expected sources: ['refund_exception_form.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'Refund_Exception_Handling_Guide.pdf', 'Refund_Exception_Handling_Guide.pdf']
+  Actual screenshots: []
+  Found: [] | Missing: ['refund_exception_form.png']
+  Confidence: High | Category: Screenshot Lookup
+  Answer: - Which refund requests require finance ops validation?
+- What is the minimum information required for a refund exception?
+- What should not be promis
+
+Q010: PASS
+  Query: What fields are required for a saved dashboard filter?
+  Expected sources: ['dashboard_filter_setup.md', 'dashboard_filter_setup.png']
+  Actual text (top-3): ['dashboard_filter_setup.md', 'internal_search_use_cases.md', 'training_content_index.md']
+  Actual screenshots: []
+  Found: ['dashboard_filter_setup.md'] | Missing: ['dashboard_filter_setup.png']
+  Confidence: High | Category: Screenshot Lookup
+  Answer: Use this note when a team member needs to configure saved filters on the operations dashboard for queue monitoring, exception review, or daily work al
+
+Q011: PASS
+  Query: What saved filter naming format should be used?
+  Expected sources: ['dashboard_filter_setup.md', 'dashboard_filter_setup.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'dashboard_filter_setup.md', 'dashboard_filter_setup.md']
+  Actual screenshots: []
+  Found: ['dashboard_filter_setup.md'] | Missing: ['dashboard_filter_setup.png']
+  Confidence: High | Category: Policy Reference
+  Answer: - Where is the filter drawer located?
+- Which screenshot shows the saved filter naming area?
+- What should be visible in a screenshot attached for sup
+
+Q012: PASS
+  Query: What should be visible in a screenshot attached for supervisor review?
+  Expected sources: ['dashboard_filter_setup.md', 'dashboard_filter_setup.png']
+  Actual text (top-3): ['dashboard_filter_setup.md', 'internal_search_use_cases.md', 'Ops_Onboarding_Access_Requests.pdf']
+  Actual screenshots: []
+  Found: ['dashboard_filter_setup.md'] | Missing: ['dashboard_filter_setup.png']
+  Confidence: High | Category: Screenshot Lookup
+  Answer: If a filter is used for supervisor review, include the filter name and screenshot reference in the handover message.
+
+- Where is the filter drawer loc
+
+Q013: PASS
+  Query: How many records should be reviewed in a monthly quality sample?
+  Expected sources: ['monthly_quality_review_sop.md']
+  Actual text (top-3): ['internal_search_use_cases.md', 'monthly_quality_review_sop.md', 'monthly_quality_review_sop.md']
+  Actual screenshots: []
+  Found: ['monthly_quality_review_sop.md'] | Missing: []
+  Confidence: High | Category: Policy Reference
+  Answer: - What fields should be checked during monthly quality review?
+- How many records are recommended for a small-team monthly review?
+- When should a rep
+
+Q014: PASS
+  Query: When should repeated monthly review errors be escalated?
+  Expected sources: ['monthly_quality_review_sop.md', 'quality_review_checklist.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'monthly_quality_review_sop.md', 'monthly_quality_review_sop.md']
+  Actual screenshots: []
+  Found: ['monthly_quality_review_sop.md'] | Missing: ['quality_review_checklist.png']
+  Confidence: High | Category: Troubleshooting Support
+  Answer: - What fields should be checked during monthly quality review?
+- How many records are recommended for a small-team monthly review?
+- When should a rep
+
+Q015: PASS
+  Query: What can a Processor role edit?
+  Expected sources: ['user_role_matrix.txt']
+  Actual text (top-3): ['user_role_matrix.txt', 'Ops_Onboarding_Access_Requests.pdf', 'Ops_Onboarding_Access_Requests.pdf']
+  Actual screenshots: []
+  Found: ['user_role_matrix.txt'] | Missing: []
+  Confidence: High | Category: SOP Lookup
+  Answer: User Role Matrix - Operations Tools
+Status: Sanitized starter material Viewer:
+- Can view assigned queue items.
+- Cannot edit status, owner, refund fi
+
+Q016: PASS
+  Query: Find the document linked to dashboard setup support.
+  Expected sources: ['training_content_index.md']
+  Actual text (top-3): ['dashboard_filter_setup.md', 'training_content_index.md', 'internal_search_use_cases.md']
+  Actual screenshots: []
+  Found: ['training_content_index.md'] | Missing: []
+  Confidence: High | Category: Screenshot Lookup
+  Answer: Use this note when a team member needs to configure saved filters on the operations dashboard for queue monitoring, exception review, or daily work al
+
+Q017: PASS
+  Query: What does the search assistant result screen need to show?
+  Expected sources: ['kb_search_result_mock.png', 'internal_search_use_cases.md']
+  Actual text (top-3): ['internal_search_use_cases.md', 'training_content_index.md', 'training_content_index.md']
+  Actual screenshots: []
+  Found: ['internal_search_use_cases.md'] | Missing: ['kb_search_result_mock.png']
+  Confidence: High | Category: Screenshot Lookup
+  Answer: This file lists typical operations questions that the content search assistant should support.
+
+This starter index is used to test retrieval across mi
+
+Q018: PASS
+  Query: Can the coordinator promise a refund approval in the routing note?
+  Expected sources: ['Refund_Exception_Handling_Guide.pdf', 'refund_exception_form.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'Refund_Exception_Handling_Guide.pdf', 'Refund_Exception_Handling_Guide.pdf']
+  Actual screenshots: []
+  Found: ['Refund_Exception_Handling_Guide.pdf'] | Missing: ['refund_exception_form.png']
+  Confidence: High | Category: Policy Reference
+  Answer: - Which refund requests require finance ops validation?
+- What is the minimum information required for a refund exception?
+- What should not be promis
+
+Q019: PASS
+  Query: What should happen when temporary access has no expiry date?
+  Expected sources: ['Ops_Onboarding_Access_Requests.pdf', 'user_access_role_mapping.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'dashboard_filter_setup.md', 'Ops_Onboarding_Access_Requests.pdf']
+  Actual screenshots: []
+  Found: ['Ops_Onboarding_Access_Requests.pdf'] | Missing: ['user_access_role_mapping.png']
+  Confidence: High | Category: Policy Reference
+  Answer: - What information is required before routing a user access request?
+- Which access role requires supervisor review?
+- When should temporary access in
+
+Q020: PASS
+  Query: Which queues should be part of the monthly quality review sample?
+  Expected sources: ['monthly_quality_review_sop.md', 'quality_review_checklist.png']
+  Actual text (top-3): ['internal_search_use_cases.md', 'monthly_quality_review_sop.md', 'monthly_quality_review_sop.md']
+  Actual screenshots: []
+  Found: ['monthly_quality_review_sop.md'] | Missing: ['quality_review_checklist.png']
+  Confidence: High | Category: Policy Reference
+  Answer: - What fields should be checked during monthly quality review?
+- How many records are recommended for a small-team monthly review?
+- When should a rep
+
+==========================================================================================
+
+RESULTS: 18 PASS / 2 FAIL out of 20
+Pass rate: 90%
+
+Failed queries:
+  Q003: missing ['user_access_role_mapping.png']
+  Q009: missing ['refund_exception_form.png']

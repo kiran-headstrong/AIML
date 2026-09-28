@@ -1,0 +1,23 @@
+# Environment / secrets
+.env
+.env.*
+!.env.sample
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.hypothesis/
+
+# Virtual environments
+.venv/
+venv/
+
+# Generated data artifacts (rebuildable via scripts/build.py)
+data/chroma_store/
+data/metadata.db
+data/metadata.json
+data/logs/
+data/model/
+data/evaluation_output.csv

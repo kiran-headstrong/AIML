@@ -1,0 +1,26 @@
+query,expected_category
+How do I set up my workstation on my first day?,onboarding
+What are the steps for new employee orientation?,onboarding
+Where do I find the new hire checklist for operations staff?,onboarding
+How do I get access to the internal tools portal as a new team member?,onboarding
+What is the standard operating procedure for processing a refund?,sop_lookup
+How do I escalate a customer complaint according to the SOP?,sop_lookup
+What are the steps to close out a daily shift report?,sop_lookup
+How do I handle a product return following the standard process?,sop_lookup
+Where is the screenshot showing the inventory management dashboard?,screenshot_lookup
+Can you find the screenshot of the order tracking screen?,screenshot_lookup
+Show me the screenshot for the password reset workflow in the admin panel,screenshot_lookup
+Where is the screenshot that shows how to navigate the reporting tool?,screenshot_lookup
+What is the company policy on remote work and flexible hours?,policy_reference
+What does the data retention policy say about customer records?,policy_reference
+Where can I find the acceptable use policy for company devices?,policy_reference
+What are the guidelines for handling confidential information?,policy_reference
+The export feature in the reporting tool is not generating files — what should I check?,troubleshooting_support
+Why is the system showing a timeout error when I submit a batch order?,troubleshooting_support
+How do I fix a sync failure between the local database and the central server?,troubleshooting_support
+What should I do if the login page keeps redirecting me to an error screen?,troubleshooting_support
+What training modules should I complete during my first week?,onboarding
+What is the procedure for updating inventory counts after receiving a shipment?,sop_lookup
+Where is the screenshot of the approval workflow in the procurement system?,screenshot_lookup
+What does the attendance policy say about unplanned absences?,policy_reference
+How do I resolve a mismatch between the invoice amount and the purchase order?,troubleshooting_support

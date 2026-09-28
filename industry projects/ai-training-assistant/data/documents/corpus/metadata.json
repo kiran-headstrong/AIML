@@ -1,0 +1,26 @@
+{
+  "dashboard_filter_setup.png": {
+    "topic_tag": "dashboard_filter_setup",
+    "description": "Saved Filter Setup - Queue Monitoring. Queue Refund Exceptions; Status Pending Review; Created Date Last 30 days; Save filter naming convention; Visibility Workgroup only; Screenshot evidence should include filter drawer and result count."
+  },
+  "approval_queue_status.png": {
+    "topic_tag": "approval_escalation",
+    "description": "Approval Queue Status View. Request age one business day; status waiting on evidence; escalation reason pending more than one business day and blocker unclear; assign supervisor review."
+  },
+  "refund_exception_form.png": {
+    "topic_tag": "refund_exception_handling",
+    "description": "Refund Exception Intake Form. Account reference; refund amount; invoice transaction ID; exception reason; evidence status; policy override; supervisor review; do not promise refund approval."
+  },
+  "user_access_role_mapping.png": {
+    "topic_tag": "access_request_routing",
+    "description": "User Access Role Mapping. Requested role Reviewer; manager approval attached; Reviewer access requires supervisor review; temporary access requires expiry date in routing note."
+  },
+  "quality_review_checklist.png": {
+    "topic_tag": "quality_review",
+    "description": "Monthly Quality Review Checklist. Review sample includes access requests, refund exceptions, approval escalations, manual account corrections, dashboard setup support; escalate if same error pattern appears in three or more records from same queue."
+  },
+  "kb_search_result_mock.png": {
+    "topic_tag": "prototype_ui_reference",
+    "description": "Search Assistant Result Example. Expected result layout includes short answer draft, top text sources, screenshot matches, confidence indicator, and suggested next step."
+  }
+}

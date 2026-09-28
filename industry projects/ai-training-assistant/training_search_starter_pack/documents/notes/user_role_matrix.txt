@@ -1,0 +1,26 @@
+User Role Matrix - Operations Tools
+Status: Sanitized starter material
+
+Viewer:
+- Can view assigned queue items.
+- Cannot edit status, owner, refund field, or approval notes.
+- Usually used for new associates and audit observers.
+
+Processor:
+- Can edit queue notes, update status, and attach evidence.
+- Cannot approve exceptions or change owner group settings.
+- Default role for trained operations associates.
+
+Reviewer:
+- Can validate processor work and mark items ready for supervisor review.
+- Can return items for correction.
+- Requires manager approval and business justification.
+
+Team Lead:
+- Can reassign owners, approve selected exception workflows, and create shared queue views.
+- Should be assigned only to named leads or temporary backup owners.
+- Requests for this role should be routed to the ops lead.
+
+Temporary Access:
+- Access must include expiry date.
+- Expiry should be added in the routing note and user access tracker.

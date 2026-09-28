@@ -1,9 +1,6 @@
 # This repository tracks only the ai-training-assistant project.
 # Everything else in this workspace is intentionally untracked (kept on disk).
-
-# Ignore all top-level content by default...
 /*
-
-# ...but keep this ignore file and the project folder.
 !/.gitignore
-!/ai-training-assistant/
+!/industry projects/
+!/industry projects/ai-training-assistant/

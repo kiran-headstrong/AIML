@@ -1,0 +1,25 @@
+{
+  "corpus_record": {
+    "record_id": "Unique record identifier",
+    "file_path": "Relative path inside project folder",
+    "title": "Readable title for display",
+    "source_type": "starter_pack or public_source",
+    "content_type": "pdf, markdown, text, png, jpg, html_text",
+    "topic": "Controlled topic tag",
+    "document_type": "training_pdf, sop_note, screenshot, index_note, public_reference",
+    "primary_user": "Likely internal user",
+    "expected_use": "How the record should support retrieval",
+    "confidentiality": "sanitized_sample or public_source",
+    "suggested_query": "Example user query"
+  },
+  "screenshot_record": {
+    "image_id": "Unique screenshot identifier",
+    "file_path": "Relative screenshot path",
+    "title": "Screenshot display title",
+    "topic": "Topic tag",
+    "screen_area": "Important UI areas visible in the image",
+    "manual_text": "Human-prepared text/metadata to index when OCR is weak",
+    "related_documents": "Semicolon-separated related file paths",
+    "suggested_queries": "Queries that should retrieve this screenshot"
+  }
+}
