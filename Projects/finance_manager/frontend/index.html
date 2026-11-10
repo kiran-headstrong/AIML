@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Manager</title>
+<style>
+:root{--bg-primary:#1a1a2e;--bg-secondary:#16213e;--bg-card:#0f3460;--text-primary:#eaeaea;--text-secondary:#a0a0a0;--accent:#e94560;--accent-hover:#ff6b6b;--success:#4ecdc4;--warning:#ffe66d;--border:#2a2a4a;--input-bg:#1a1a3e;--sidebar-width:260px}
+.light-theme{--bg-primary:#f5f7fa;--bg-secondary:#ffffff;--bg-card:#ffffff;--text-primary:#2d3748;--text-secondary:#718096;--accent:#e94560;--accent-hover:#d63851;--border:#e2e8f0;--input-bg:#f7fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;transition:all .3s}
+.auth-container{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+.auth-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.auth-box h1{text-align:center;margin-bottom:8px;font-size:28px}
+.auth-box p{text-align:center;color:var(--text-secondary);margin-bottom:24px}
+.auth-tabs{display:flex;margin-bottom:24px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.auth-tabs button{flex:1;padding:12px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+.auth-tabs button.active{background:var(--accent);color:#fff}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:6px;font-size:13px;color:var(--text-secondary);font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:14px;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.btn{padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn-primary{background:var(--accent);color:#fff;width:100%}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text-primary)}
+.btn-danger{background:#e53e3e;color:#fff}
+.btn-sm{padding:8px 14px;font-size:12px}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-width);background:var(--bg-secondary);border-right:1px solid var(--border);padding:20px 0;position:fixed;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-header{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.sidebar-header h2{font-size:18px;color:var(--accent)}
+.sidebar-header small{color:var(--text-secondary);font-size:12px}
+.nav-item{padding:12px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;color:var(--text-secondary);transition:all .2s;font-size:14px;border-left:3px solid transparent}
+.nav-item:hover,.nav-item.active{background:rgba(233,69,96,.1);color:var(--accent);border-left-color:var(--accent)}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border)}
+.main-content{margin-left:var(--sidebar-width);flex:1;padding:30px;min-height:100vh}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.page-header h1{font-size:24px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.stat-card .label{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}
+.stat-card .value{font-size:28px;font-weight:700;margin-top:4px}
+.stat-card .value.positive{color:var(--success)}
+.stat-card .value.negative{color:var(--accent)}
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px}
+th{color:var(--text-secondary);font-weight:600;font-size:12px;text-transform:uppercase}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:1000;padding:20px}
+.modal{background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal h2{margin-bottom:20px}
+.modal-actions{display:flex;gap:12px;margin-top:24px;justify-content:flex-end}
+.toast{position:fixed;top:20px;right:20px;padding:14px 24px;border-radius:8px;color:#fff;font-size:14px;font-weight:500;z-index:9999;animation:slideIn .3s ease}
+.toast.success{background:#38a169}
+.toast.error{background:#e53e3e}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.category-dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:8px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-secondary)}
+.empty-state p{margin-top:8px;font-size:14px}
+.filter-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-bar select,.filter-bar input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text-primary);font-size:13px}
+.theme-toggle{cursor:pointer;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-primary);font-size:13px}
+.loan-card{border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;background:var(--bg-card)}
+.loan-card h3{margin-bottom:8px}
+.loan-card .loan-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:13px;color:var(--text-secondary)}
+.loan-card .loan-details span{display:block}
+.loan-card .loan-details strong{color:var(--text-primary)}
+.loan-card .payment-summary{margin-top:10px;font-size:12px;color:var(--success);font-weight:600}
+.schedule-table{max-height:400px;overflow-y:auto}
+.payment-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.payment-month{padding:12px 8px;border-radius:8px;text-align:center;cursor:pointer;border:1px solid var(--border);font-size:13px;font-weight:500;transition:all .2s}
+.payment-month:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.payment-month.paid{background:rgba(78,205,196,.15);border-color:var(--success);color:var(--success)}
+.payment-month.unpaid{background:var(--input-bg);color:var(--text-secondary)}
+.import-section{display:flex;gap:8px;align-items:center}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<script>
+const API_BASE = 'http://localhost:8000/api';
+
+// === State ===
+let state = {
+    token: localStorage.getItem('finance_token'),
+    user: JSON.parse(localStorage.getItem('finance_user') || 'null'),
+    currentPage: 'dashboard',
+    categories: [],
+    expenses: [],
+    loans: [],
+    dashboard: null,
+    theme: localStorage.getItem('finance_theme') || 'dark'
+};
+
+// === API Helper ===
+async function api(endpoint, options = {}) {
+    const url = API_BASE + endpoint;
+    const headers = { ...options.headers };
+    if (!options.isFormData) headers['Content-Type'] = 'application/json';
+    if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+    try {
+        const res = await fetch(url, { ...options, headers });
+        if (res.status === 401) { logout(); return null; }
+        if (res.status === 204) return null;
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Request failed');
+        }
+        if (res.headers.get('content-type')?.includes('text/csv')) return res;
+        return await res.json();
+    } catch(e) { showToast(e.message, 'error'); throw e; }
+}
+
+// === Toast ===
+function showToast(msg, type='success') {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+// === Theme ===
+function applyTheme() {
+    document.body.className = state.theme === 'light' ? 'light-theme' : '';
+}
+function toggleTheme() {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('finance_theme', state.theme);
+    applyTheme();
+    render();
+}
+
+// === Auth ===
+function logout() {
+    state.token = null; state.user = null;
+    localStorage.removeItem('finance_token');
+    localStorage.removeItem('finance_user');
+    render();
+}
+
+async function handleLogin(email, password) {
+    const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({email, password}) });
+    if (data) {
+        state.token = data.access_token;
+        state.user = data.user;
+        localStorage.setItem('finance_token', data.access_token);
+        localStorage.setItem('finance_user', JSON.stringify(data.user));
+        showToast('Welcome back, ' + data.user.name + '!');
+        render();
+    }
+}
+
+async function handleRegister(name, email, password) {
+    const data = await api('/auth/register', { method: 'POST', body: JSON.stringify({name, email, password}) });
+    if (data) {
+        state.token = data.access_token;
+        state.user = data.user;
+        localStorage.setItem('finance_token', data.access_token);
+        localStorage.setItem('finance_user', JSON.stringify(data.user));
+        showToast('Account created! Welcome, ' + data.user.name);
+        render();
+    }
+}
+
+// === Data Loading ===
+async function loadDashboard() { state.dashboard = await api('/dashboard'); }
+async function loadCategories() { state.categories = await api('/categories') || []; }
+async function loadExpenses(month, year) {
+    let q = '/expenses';
+    const params = [];
+    if (month) params.push('month=' + month);
+    if (year) params.push('year=' + year);
+    if (params.length) q += '?' + params.join('&');
+    state.expenses = await api(q) || [];
+}
+async function loadLoans() { state.loans = await api('/loans') || []; }
+
+// === Modal ===
+function showModal(title, content) {
+    document.getElementById('modal-root').innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+            <div class="modal"><h2>${title}</h2>${content}</div>
+        </div>`;
+}
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+
+// === Currency Format ===
+function curr(n) { return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n); }
+
+// === Render Auth ===
+function renderAuth() {
+    return `<div class="auth-container"><div class="auth-box">
+        <h1>\u{1F4B0} Finance Manager</h1>
+        <p>Track expenses, manage budgets, monitor loans</p>
+        <div class="auth-tabs">
+            <button id="tab-login" class="active" onclick="switchAuthTab('login')">Login</button>
+            <button id="tab-register" onclick="switchAuthTab('register')">Register</button>
+        </div>
+        <form id="login-form">
+            <div class="form-group"><label>Email</label><input type="email" id="login-email" required placeholder="you@example.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="login-password" required placeholder="Min 6 characters"></div>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+        <form id="register-form" class="hidden">
+            <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" required placeholder="John Doe"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="reg-email" required placeholder="you@example.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="reg-password" required placeholder="Min 6 characters" minlength="6"></div>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+    </div></div>`;
+}
+
+function switchAuthTab(tab) {
+    document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+// === Layout ===
+function renderLayout(content) {
+    const u = state.user;
+    return `<div class="layout">
+        <div class="sidebar">
+            <div class="sidebar-header"><h2>\u{1F4B0} Finance Manager</h2><small>${u ? u.name : 'User'}</small></div>
+            <div class="nav-item ${state.currentPage==='dashboard'?'active':''}" onclick="navigate('dashboard')">\u{1F4CA} Dashboard</div>
+            <div class="nav-item ${state.currentPage==='expenses'?'active':''}" onclick="navigate('expenses')">\u{1F4B8} Expenses</div>
+            <div class="nav-item ${state.currentPage==='categories'?'active':''}" onclick="navigate('categories')">\u{1F3F7}\uFE0F Categories</div>
+            <div class="nav-item ${state.currentPage==='loans'?'active':''}" onclick="navigate('loans')">\u{1F3E6} Loans</div>
+            <div class="sidebar-footer">
+                <button class="theme-toggle" onclick="toggleTheme()">${state.theme==='dark'?'\u2600\uFE0F Light':'\u{1F319} Dark'} Mode</button>
+                <button class="btn btn-secondary btn-sm" onclick="logout()" style="margin-top:8px;width:100%">Logout</button>
+            </div>
+        </div>
+        <div class="main-content">${content}</div>
+    </div>`;
+}
+
+async function navigate(page) {
+    state.currentPage = page;
+    render();
+    try {
+        if (page === 'dashboard') { await loadDashboard(); render(); }
+        if (page === 'expenses') { await loadCategories(); await loadExpenses(); render(); }
+        if (page === 'categories') { await loadCategories(); render(); }
+        if (page === 'loans') { await loadLoans(); await loadLoansPaymentSummaries(); render(); }
+    } catch(e) {}
+}
+
+// === Dashboard Page ===
+function renderDashboard() {
+    const d = state.dashboard;
+    if (!d) return '<div class="card"><p>Loading dashboard...</p></div>';
+    const budget = parseFloat(d.monthly_budget) || 0;
+    const spent = parseFloat(d.total_spent_this_month) || 0;
+    const balance = budget - spent;
+    
+    let catBreakdown = '';
+    if (d.category_breakdown && d.category_breakdown.length) {
+        catBreakdown = '<div class="card"><h3 style="margin-bottom:16px">Spending by Category</h3>' +
+            d.category_breakdown.map(c => 
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">' +
+                '<span><span class="category-dot" style="background:'+c.color+'"></span>'+c.name+'</span>' +
+                '<strong>'+curr(c.total)+'</strong></div>'
+            ).join('') + '</div>';
+    }
+
+    let recentTable = '';
+    if (d.recent_expenses && d.recent_expenses.length) {
+        recentTable = '<div class="card"><h3 style="margin-bottom:16px">Recent Transactions</h3>' +
+            '<div class="table-container"><table><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Notes</th></tr></thead><tbody>' +
+            d.recent_expenses.map(e => 
+                '<tr><td>'+e.date+'</td>' +
+                '<td><span class="category-dot" style="background:'+(e.category_color||'#666')+'"></span>'+(e.category_name||'N/A')+'</td>' +
+                '<td><strong>'+curr(e.amount)+'</strong></td>' +
+                '<td style="color:var(--text-secondary)">'+(e.notes||'-')+'</td></tr>'
+            ).join('') + '</tbody></table></div></div>';
+    } else {
+        recentTable = '<div class="empty-state"><h3>No expenses yet</h3><p>Add your first expense to see stats</p></div>';
+    }
+
+    return `<div class="page-header"><h1>Dashboard</h1>
+        <button class="btn btn-secondary btn-sm" onclick="showBudgetModal()">Set Budget</button></div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="label">Monthly Budget</div><div class="value">${curr(budget)}</div></div>
+            <div class="stat-card"><div class="label">Spent This Month</div><div class="value negative">${curr(spent)}</div></div>
+            <div class="stat-card"><div class="label">Remaining</div><div class="value ${balance>=0?'positive':'negative'}">${curr(balance)}</div></div>
+            <div class="stat-card"><div class="label">Total Expenses</div><div class="value">${d.total_expenses}</div></div>
+        </div>` + catBreakdown + recentTable;
+}
+
+function showBudgetModal() {
+    const current = state.dashboard ? state.dashboard.monthly_budget : 0;
+    showModal('Set Monthly Budget', `
+        <form id="budget-form">
+            <div class="form-group"><label>Budget Amount (\u20B9)</label>
+            <input type="number" id="budget-amount" value="${current}" min="0" step="100" required></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Save</button>
+            </div>
+        </form>`);
+    document.getElementById('budget-form').onsubmit = async(e) => {
+        e.preventDefault();
+        await api('/budget', {method:'PUT', body:JSON.stringify({amount:parseFloat(document.getElementById('budget-amount').value)})});
+        closeModal(); showToast('Budget updated');
+        await loadDashboard(); render();
+    };
+}
+
+// === Expenses Page ===
+function renderExpenses() {
+    const now = new Date();
+    const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    
+    let rows = state.expenses.map(e => 
+        '<tr><td>'+e.date+'</td>' +
+        '<td><span class="category-dot" style="background:'+(e.category_color||'#666')+'"></span>'+(e.category_name||'N/A')+'</td>' +
+        '<td><strong>'+curr(e.amount)+'</strong></td>' +
+        '<td style="color:var(--text-secondary)">'+(e.notes||'-')+'</td>' +
+        '<td><button class="btn btn-secondary btn-sm" onclick="showEditExpenseModal(\''+e.id+'\','+e.amount+',\''+e.category_id+'\',\''+e.date+'\',\''+(e.notes||'').replace(/'/g,"\\'")+'\')">&#9998;</button> ' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteExpense(\''+e.id+'\')">&#128465;</button></td></tr>'
+    ).join('');
+
+    return `<div class="page-header"><h1>Expenses</h1>
+        <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="exportExpenses()">Export CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="showAddExpenseModal()">+ Add Expense</button>
+        </div></div>
+        <div class="filter-bar">
+            <select id="filter-month" onchange="filterExpenses()">
+                <option value="">All Months</option>
+                ${months.slice(1).map((m,i) => '<option value="'+(i+1)+'" '+(i+1===now.getMonth()+1?'selected':'')+'>'+m+'</option>').join('')}
+            </select>
+            <select id="filter-year" onchange="filterExpenses()">
+                <option value="">All Years</option>
+                ${[now.getFullYear(), now.getFullYear()-1].map(y => '<option value="'+y+'" '+(y===now.getFullYear()?'selected':'')+'>'+y+'</option>').join('')}
+            </select>
+        </div>
+        ${state.expenses.length ? 
+            '<div class="card"><div class="table-container"><table><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Notes</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'
+            : '<div class="empty-state"><h3>No expenses found</h3><p>Add an expense or change filters</p></div>'}`;
+}
+
+async function filterExpenses() {
+    const m = document.getElementById('filter-month')?.value;
+    const y = document.getElementById('filter-year')?.value;
+    await loadExpenses(m || null, y || null);
+    render();
+}
+
+function showAddExpenseModal() {
+    const today = new Date().toISOString().split('T')[0];
+    const catOpts = state.categories.map(c => '<option value="'+c.id+'">'+c.name+'</option>').join('');
+    showModal('Add Expense', `
+        <form id="expense-form">
+            <div class="form-group"><label>Amount (\u20B9)</label><input type="number" id="exp-amount" min="1" step="0.01" required></div>
+            <div class="form-group"><label>Category</label><select id="exp-category" required>${catOpts}</select></div>
+            <div class="form-group"><label>Date</label><input type="date" id="exp-date" value="${today}" required></div>
+            <div class="form-group"><label>Notes (optional)</label><input type="text" id="exp-notes" placeholder="Lunch, groceries, etc."></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Add</button>
+            </div>
+        </form>`);
+    document.getElementById('expense-form').onsubmit = async(e) => {
+        e.preventDefault();
+        await api('/expenses', {method:'POST', body:JSON.stringify({
+            amount: parseFloat(document.getElementById('exp-amount').value),
+            category_id: document.getElementById('exp-category').value,
+            date: document.getElementById('exp-date').value,
+            notes: document.getElementById('exp-notes').value || null
+        })});
+        closeModal(); showToast('Expense added');
+        await loadExpenses(); render();
+    };
+}
+
+async function deleteExpense(id) {
+    if (!confirm('Delete this expense?')) return;
+    await api('/expenses/'+id, {method:'DELETE'});
+    showToast('Expense deleted');
+    await loadExpenses(); render();
+}
+
+async function exportExpenses() {
+    try {
+        const res = await api('/expenses/export');
+        if (res && res.blob) {
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'expenses.csv'; a.click();
+            URL.revokeObjectURL(url);
+        }
+    } catch(e) {}
+}
+
+// === Categories Page ===
+function renderCategories() {
+    let rows = state.categories.map(c => 
+        '<tr><td><span class="category-dot" style="background:'+c.color+'"></span>'+c.name+'</td>' +
+        '<td><span class="badge" style="background:'+c.color+'22;color:'+c.color+'">'+c.color+'</span></td>' +
+        '<td>'+(c.is_default?'\u2705':'')+'</td>' +
+        '<td><button class="btn btn-secondary btn-sm" onclick="showEditCategoryModal(\''+c.id+'\',\''+c.name.replace(/'/g,"\\'")+'\',\''+c.color+'\')">&#9998;</button> ' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteCategory(\''+c.id+'\')">&#128465;</button></td></tr>'
+    ).join('');
+
+    return `<div class="page-header"><h1>Categories</h1>
+        <button class="btn btn-primary btn-sm" onclick="showAddCategoryModal()">+ Add Category</button></div>
+        ${state.categories.length ?
+            '<div class="card"><div class="table-container"><table><thead><tr><th>Name</th><th>Color</th><th>Default</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'
+            : '<div class="empty-state"><h3>No categories</h3><p>Add a category to organize expenses</p></div>'}`;
+}
+
+function showAddCategoryModal() {
+    showModal('Add Category', `
+        <form id="cat-form">
+            <div class="form-group"><label>Name</label><input type="text" id="cat-name" required placeholder="e.g. Groceries"></div>
+            <div class="form-group"><label>Color</label><input type="color" id="cat-color" value="#e94560" style="height:45px"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Add</button>
+            </div>
+        </form>`);
+    document.getElementById('cat-form').onsubmit = async(e) => {
+        e.preventDefault();
+        await api('/categories', {method:'POST', body:JSON.stringify({
+            name: document.getElementById('cat-name').value,
+            color: document.getElementById('cat-color').value,
+            is_default: false
+        })});
+        closeModal(); showToast('Category added');
+        await loadCategories(); render();
+    };
+}
+
+function showEditCategoryModal(id, name, color) {
+    showModal('Edit Category', `
+        <form id="cat-edit-form">
+            <div class="form-group"><label>Name</label><input type="text" id="cat-edit-name" value="${name}" required></div>
+            <div class="form-group"><label>Color</label><input type="color" id="cat-edit-color" value="${color}" style="height:45px"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Save</button>
+            </div>
+        </form>`);
+    document.getElementById('cat-edit-form').onsubmit = async(e) => {
+        e.preventDefault();
+        await api('/categories/'+id, {method:'PUT', body:JSON.stringify({
+            name: document.getElementById('cat-edit-name').value,
+            color: document.getElementById('cat-edit-color').value
+        })});
+        closeModal(); showToast('Category updated');
+        await loadCategories(); render();
+    };
+}
+
+async function deleteCategory(id) {
+    if (!confirm('Delete this category? All linked expenses will also be deleted.')) return;
+    await api('/categories/'+id, {method:'DELETE'});
+    showToast('Category deleted');
+    await loadCategories(); render();
+}
+
+// === Loans Page ===
+function renderLoans() {
+    let cards = state.loans.map(l => {
+        const paymentSummary = l._paymentSummary ? 
+            '<div class="payment-summary">\u{1F4B3} Payments: ' + l._paymentSummary.paid_count + '/12 this year</div>' : '';
+        return '<div class="loan-card"><div style="display:flex;justify-content:space-between;align-items:start">' +
+        '<h3>'+l.borrower_name+'</h3>' +
+        '<div><button class="btn btn-secondary btn-sm" onclick="showPaymentsModal(\''+l.id+'\')" title="Payments">\u{1F4B3}</button> ' +
+        '<button class="btn btn-secondary btn-sm" onclick="showSchedule(\''+l.id+'\')" title="Schedule">&#128197;</button> ' +
+        '<button class="btn btn-secondary btn-sm" onclick="showEditLoanModal(\''+l.id+'\')" title="Edit">&#9998;</button> ' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteLoan(\''+l.id+'\')" title="Delete">&#128465;</button></div></div>' +
+        '<div class="loan-details" style="margin-top:12px">' +
+        '<span>Principal: <strong>'+curr(l.principal)+'</strong></span>' +
+        '<span>ROI: <strong>'+l.roi+'% '+l.rate_type.replace('_',' ')+'</strong></span>' +
+        (l.tenure_months ? '<span>Tenure: <strong>'+l.tenure_months+' months</strong></span>' : '<span>Tenure: <strong>Open-ended</strong></span>') +
+        '<span>Type: <strong>'+l.interest_type+'</strong></span>' +
+        '<span>Monthly Int: <strong>'+curr(l.monthly_payment)+'</strong></span>' +
+        (l.total_interest ? '<span>Total Interest: <strong>'+curr(l.total_interest)+'</strong></span>' : '') +
+        (l.loan_date ? '<span>Loan Date: <strong>'+l.loan_date+'</strong></span>' : '') +
+        (l.end_date ? '<span>End Date: <strong>'+l.end_date+'</strong></span>' : '') +
+        (l.borrower_phone ? '<span>Phone: <strong>'+l.borrower_phone+'</strong></span>' : '') +
+        (l.borrower_email ? '<span>Email: <strong>'+l.borrower_email+'</strong></span>' : '') +
+        '</div>' + paymentSummary + '</div>';
+    }).join('');
+
+    return `<div class="page-header"><h1>Loans</h1>
+        <div class="import-section">
+            <a href="../sample_loan_import.csv" download class="btn btn-secondary btn-sm">\u{1F4E5} Template</a>
+            <button class="btn btn-secondary btn-sm" onclick="showImportLoanModal()">\u{1F4C2} Import</button>
+            <button class="btn btn-primary btn-sm" onclick="showAddLoanModal()">+ Add Loan</button>
+        </div></div>
+        ${state.loans.length ? cards : '<div class="empty-state"><h3>No loans tracked</h3><p>Add a loan to track repayments</p></div>'}`;
+}
+
+// === Loan Import ===
+function showImportLoanModal() {
+    showModal('Import Loans', `
+        <p style="color:var(--text-secondary);margin-bottom:16px;font-size:13px">Upload a .csv or .xlsx file with columns: borrower_name, borrower_phone, borrower_email, principal, roi, tenure_months, rate_type, interest_type</p>
+        <form id="import-loan-form">
+            <div class="form-group">
+                <label>Select File (.csv or .xlsx)</label>
+                <input type="file" id="import-file" accept=".csv,.xlsx" required style="padding:8px">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Import</button>
+            </div>
+        </form>`);
+    document.getElementById('import-loan-form').onsubmit = async(e) => {
+        e.preventDefault();
+        const fileInput = document.getElementById('import-file');
+        if (!fileInput.files.length) return;
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        try {
+            const data = await api('/loans/import', { method: 'POST', body: formData, isFormData: true });
+            if (data) {
+                closeModal();
+                showToast('Imported ' + data.imported + ' loans from ' + data.total_rows + ' rows');
+                await loadLoans(); render();
+            }
+        } catch(err) {}
+    };
+}
+
+// === Payment Tracking ===
+async function loadPaymentStatus(loanId, year) {
+    return await api('/loans/' + loanId + '/payment-status?year=' + year);
+}
+
+async function showPaymentsModal(loanId) {
+    const loan = state.loans.find(l => l.id === loanId);
+    if (!loan) return;
+    const currentYear = new Date().getFullYear();
+    await renderPaymentsModalContent(loanId, loan.borrower_name, currentYear);
+}
+
+async function renderPaymentsModalContent(loanId, borrowerName, year) {
+    const data = await loadPaymentStatus(loanId, year);
+    if (!data) return;
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const currentYear = new Date().getFullYear();
+    const yearOptions = [];
+    for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+        yearOptions.push('<option value="'+y+'" '+(y===year?'selected':'')+'>'+y+'</option>');
+    }
+
+    let grid = '<div class="payment-grid">';
+    data.months.forEach(m => {
+        const cls = m.paid ? 'paid' : 'unpaid';
+        const icon = m.paid ? '\u2705' : '\u2B1C';
+        grid += '<div class="payment-month '+cls+'" onclick="handlePaymentClick(\''+loanId+'\',\''+borrowerName+'\','+m.month+','+year+','+(m.paid?'true':'false')+','+(m.paid ? '\''+m.id+'\'' : 'null')+','+data.monthly_interest+')">' +
+            icon + ' ' + monthNames[m.month-1] +
+            (m.paid ? '<br><small>'+curr(m.amount_paid)+'</small>' : '') +
+            '</div>';
+    });
+    grid += '</div>';
+
+    showModal('\u{1F4B3} Payments - ' + borrowerName, `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <label style="font-size:13px;color:var(--text-secondary)">Year:</label>
+            <select id="payment-year-select" onchange="changePaymentYear('${loanId}','${borrowerName.replace(/'/g,"\\'")}')" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text-primary)">
+                ${yearOptions.join('')}
+            </select>
+            <span style="margin-left:auto;font-size:13px;color:var(--success);font-weight:600">${data.paid_count}/12 paid</span>
+        </div>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">Monthly interest: ${curr(data.monthly_interest)} \u2022 Click a month to record/view payment</p>
+        ${grid}
+        <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Close</button></div>`);
+}
+
+async function changePaymentYear(loanId, borrowerName) {
+    const year = parseInt(document.getElementById('payment-year-select').value);
+    await renderPaymentsModalContent(loanId, borrowerName, year);
+}
+
+function handlePaymentClick(loanId, borrowerName, month, year, isPaid, paymentId, monthlyInterest) {
+    if (isPaid) {
+        showPaymentDetails(loanId, borrowerName, month, year, paymentId);
+    } else {
+        showRecordPaymentForm(loanId, borrowerName, month, year, monthlyInterest);
+    }
+}
+
+function showRecordPaymentForm(loanId, borrowerName, month, year, monthlyInterest) {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const today = new Date().toISOString().split('T')[0];
+    showModal('Record Payment - ' + monthNames[month-1] + ' ' + year, `
+        <p style="color:var(--text-secondary);margin-bottom:16px;font-size:13px">Loan: ${borrowerName}</p>
+        <form id="record-payment-form">
+            <div class="form-group"><label>Amount Paid (\u20B9)</label>
+                <input type="number" id="pay-amount" value="${monthlyInterest}" min="0.01" step="0.01" required></div>
+            <div class="form-group"><label>Payment Date</label>
+                <input type="date" id="pay-date" value="${today}" required></div>
+            <div class="form-group"><label>Notes (optional)</label>
+                <input type="text" id="pay-notes" placeholder="e.g. Bank transfer"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="showPaymentsModal('${loanId}')">Back</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Record Payment</button>
+            </div>
+        </form>`);
+    document.getElementById('record-payment-form').onsubmit = async(e) => {
+        e.preventDefault();
+        try {
+            await api('/loans/'+loanId+'/payments', {method:'POST', body:JSON.stringify({
+                month: month,
+                year: year,
+                amount_paid: parseFloat(document.getElementById('pay-amount').value),
+                paid_date: document.getElementById('pay-date').value,
+                notes: document.getElementById('pay-notes').value || null
+            })});
+            showToast('Payment recorded');
+            await loadLoansPaymentSummaries();
+            render();
+            await renderPaymentsModalContent(loanId, borrowerName, year);
+        } catch(err) {}
+    };
+}
+
+async function showPaymentDetails(loanId, borrowerName, month, year, paymentId) {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    // Get payment details from the status
+    const data = await loadPaymentStatus(loanId, year);
+    if (!data) return;
+    const monthData = data.months.find(m => m.month === month);
+    if (!monthData || !monthData.paid) return;
+
+    showModal('Payment Details - ' + monthNames[month-1] + ' ' + year, `
+        <p style="color:var(--text-secondary);margin-bottom:16px;font-size:13px">Loan: ${borrowerName}</p>
+        <div class="card" style="margin-bottom:16px">
+            <div style="display:grid;gap:8px;font-size:14px">
+                <span>Amount: <strong>${curr(monthData.amount_paid)}</strong></span>
+                <span>Date: <strong>${monthData.paid_date}</strong></span>
+                ${monthData.notes ? '<span>Notes: <strong>'+monthData.notes+'</strong></span>' : ''}
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="showPaymentsModal('${loanId}')">Back</button>
+            <button class="btn btn-danger btn-sm" onclick="deletePayment('${loanId}','${paymentId}','${borrowerName}',${year})">Delete Payment</button>
+        </div>`);
+}
+
+async function deletePayment(loanId, paymentId, borrowerName, year) {
+    if (!confirm('Delete this payment? This cannot be undone.')) return;
+    try {
+        await api('/loans/'+loanId+'/payments/'+paymentId, {method:'DELETE'});
+        showToast('Payment deleted');
+        await loadLoansPaymentSummaries();
+        render();
+        await renderPaymentsModalContent(loanId, borrowerName, year);
+    } catch(err) {}
+}
+
+async function loadLoansPaymentSummaries() {
+    const currentYear = new Date().getFullYear();
+    for (let loan of state.loans) {
+        try {
+            const data = await api('/loans/'+loan.id+'/payment-status?year='+currentYear);
+            if (data) {
+                loan._paymentSummary = { paid_count: data.paid_count };
+            }
+        } catch(e) {}
+    }
+}
+
+function showAddLoanModal() {
+    const today = new Date().toISOString().split('T')[0];
+    showModal('Add Loan', `
+        <form id="loan-form">
+            <div class="form-group"><label>Borrower Name</label><input type="text" id="loan-name" required></div>
+            <div class="form-group"><label>Phone (optional)</label><input type="text" id="loan-phone"></div>
+            <div class="form-group"><label>Email (optional)</label><input type="email" id="loan-email"></div>
+            <div class="form-group"><label>Principal Amount (\u20B9)</label><input type="number" id="loan-principal" min="1" required></div>
+            <div class="form-group"><label>Rate of Interest (%)</label><input type="number" id="loan-roi" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Tenure (months) — leave empty if open-ended</label><input type="number" id="loan-tenure" min="1" placeholder="Optional for simple interest"></div>
+            <div class="form-group"><label>Loan Given Date</label><input type="date" id="loan-date" value="${today}"></div>
+            <div class="form-group"><label>Expected End Date (optional)</label><input type="date" id="loan-end-date"></div>
+            <div class="form-group"><label>Rate Type</label><select id="loan-rate-type">
+                <option value="per_annum">Per Annum</option><option value="per_month">Per Month</option></select></div>
+            <div class="form-group"><label>Interest Type</label><select id="loan-interest-type">
+                <option value="simple">Simple</option><option value="compound">Compound (EMI)</option></select></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Add Loan</button>
+            </div>
+        </form>`);
+    document.getElementById('loan-form').onsubmit = async(e) => {
+        e.preventDefault();
+        const tenure = document.getElementById('loan-tenure').value;
+        await api('/loans', {method:'POST', body:JSON.stringify({
+            borrower_name: document.getElementById('loan-name').value,
+            borrower_phone: document.getElementById('loan-phone').value || null,
+            borrower_email: document.getElementById('loan-email').value || null,
+            principal: parseFloat(document.getElementById('loan-principal').value),
+            roi: parseFloat(document.getElementById('loan-roi').value),
+            tenure_months: tenure ? parseInt(tenure) : null,
+            loan_date: document.getElementById('loan-date').value || null,
+            end_date: document.getElementById('loan-end-date').value || null,
+            rate_type: document.getElementById('loan-rate-type').value,
+            interest_type: document.getElementById('loan-interest-type').value
+        })});
+        closeModal(); showToast('Loan added');
+        await loadLoans(); render();
+    };
+}
+
+async function deleteLoan(id) {
+    if (!confirm('Delete this loan?')) return;
+    await api('/loans/'+id, {method:'DELETE'});
+    showToast('Loan deleted');
+    await loadLoans(); render();
+}
+
+async function showSchedule(id) {
+    try {
+        const data = await api('/loans/'+id+'/schedule');
+        if (!data) return;
+        let rows = data.schedule.map(s =>
+            '<tr><td>'+s.month+'</td><td>'+curr(s.opening_balance)+'</td><td>'+curr(s.interest)+'</td>' +
+            '<td>'+curr(s.principal_component)+'</td><td>'+curr(s.payment)+'</td><td>'+curr(s.closing_balance)+'</td></tr>'
+        ).join('');
+        showModal('Repayment Schedule - ' + data.borrower_name, `
+            <p style="margin-bottom:12px;color:var(--text-secondary)">Principal: ${curr(data.principal)}</p>
+            <div class="schedule-table"><table><thead><tr><th>#</th><th>Opening</th><th>Interest</th><th>Principal</th><th>Payment</th><th>Closing</th></tr></thead>
+            <tbody>${rows}</tbody></table></div>
+            <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Close</button></div>`);
+    } catch(e) {}
+}
+
+// === Edit Expense ===
+function showEditExpenseModal(id, amount, categoryId, date, notes) {
+    const catOpts = state.categories.map(c => '<option value="'+c.id+'" '+(c.id===categoryId?'selected':'')+'>'+c.name+'</option>').join('');
+    showModal('Edit Expense', `
+        <form id="expense-edit-form">
+            <div class="form-group"><label>Amount (\u20B9)</label><input type="number" id="exp-edit-amount" value="${amount}" min="1" step="0.01" required></div>
+            <div class="form-group"><label>Category</label><select id="exp-edit-category" required>${catOpts}</select></div>
+            <div class="form-group"><label>Date</label><input type="date" id="exp-edit-date" value="${date}" required></div>
+            <div class="form-group"><label>Notes</label><input type="text" id="exp-edit-notes" value="${notes}"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Save</button>
+            </div>
+        </form>`);
+    document.getElementById('expense-edit-form').onsubmit = async(e) => {
+        e.preventDefault();
+        await api('/expenses/'+id, {method:'PUT', body:JSON.stringify({
+            amount: parseFloat(document.getElementById('exp-edit-amount').value),
+            category_id: document.getElementById('exp-edit-category').value,
+            date: document.getElementById('exp-edit-date').value,
+            notes: document.getElementById('exp-edit-notes').value || null
+        })});
+        closeModal(); showToast('Expense updated');
+        await loadExpenses(); render();
+    };
+}
+
+// === Edit Loan ===
+function showEditLoanModal(id) {
+    const l = state.loans.find(x => x.id === id);
+    if (!l) return;
+    showModal('Edit Loan', `
+        <form id="loan-edit-form">
+            <div class="form-group"><label>Borrower Name</label><input type="text" id="loan-edit-name" value="${l.borrower_name}" required></div>
+            <div class="form-group"><label>Phone</label><input type="text" id="loan-edit-phone" value="${l.borrower_phone||''}"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="loan-edit-email" value="${l.borrower_email||''}"></div>
+            <div class="form-group"><label>Principal (\u20B9)</label><input type="number" id="loan-edit-principal" value="${l.principal}" min="1" required></div>
+            <div class="form-group"><label>Rate of Interest (%)</label><input type="number" id="loan-edit-roi" value="${l.roi}" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Tenure (months) — leave empty if open-ended</label><input type="number" id="loan-edit-tenure" value="${l.tenure_months||''}" min="1" placeholder="Optional"></div>
+            <div class="form-group"><label>Loan Given Date</label><input type="date" id="loan-edit-date" value="${l.loan_date||''}"></div>
+            <div class="form-group"><label>Expected End Date</label><input type="date" id="loan-edit-end-date" value="${l.end_date||''}"></div>
+            <div class="form-group"><label>Rate Type</label><select id="loan-edit-rate-type">
+                <option value="per_annum" ${l.rate_type==='per_annum'?'selected':''}>Per Annum</option>
+                <option value="per_month" ${l.rate_type==='per_month'?'selected':''}>Per Month</option></select></div>
+            <div class="form-group"><label>Interest Type</label><select id="loan-edit-interest-type">
+                <option value="simple" ${l.interest_type==='simple'?'selected':''}>Simple</option>
+                <option value="compound" ${l.interest_type==='compound'?'selected':''}>Compound</option></select></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="width:auto">Save</button>
+            </div>
+        </form>`);
+    document.getElementById('loan-edit-form').onsubmit = async(e) => {
+        e.preventDefault();
+        const tenure = document.getElementById('loan-edit-tenure').value;
+        await api('/loans/'+id, {method:'PUT', body:JSON.stringify({
+            borrower_name: document.getElementById('loan-edit-name').value,
+            borrower_phone: document.getElementById('loan-edit-phone').value || null,
+            borrower_email: document.getElementById('loan-edit-email').value || null,
+            principal: parseFloat(document.getElementById('loan-edit-principal').value),
+            roi: parseFloat(document.getElementById('loan-edit-roi').value),
+            tenure_months: tenure ? parseInt(tenure) : null,
+            loan_date: document.getElementById('loan-edit-date').value || null,
+            end_date: document.getElementById('loan-edit-end-date').value || null,
+            rate_type: document.getElementById('loan-edit-rate-type').value,
+            interest_type: document.getElementById('loan-edit-interest-type').value
+        })});
+        closeModal(); showToast('Loan updated');
+        await loadLoans(); render();
+    };
+}
+
+// === Main Render ===
+function render() {
+    applyTheme();
+    const app = document.getElementById('app');
+    if (!state.token) {
+        app.innerHTML = renderAuth();
+        // Bind forms
+        setTimeout(() => {
+            const lf = document.getElementById('login-form');
+            const rf = document.getElementById('register-form');
+            if (lf) lf.onsubmit = (e) => { e.preventDefault(); handleLogin(document.getElementById('login-email').value, document.getElementById('login-password').value); };
+            if (rf) rf.onsubmit = (e) => { e.preventDefault(); handleRegister(document.getElementById('reg-name').value, document.getElementById('reg-email').value, document.getElementById('reg-password').value); };
+        }, 0);
+        return;
+    }
+
+    let content = '';
+    switch(state.currentPage) {
+        case 'dashboard': content = renderDashboard(); break;
+        case 'expenses': content = renderExpenses(); break;
+        case 'categories': content = renderCategories(); break;
+        case 'loans': content = renderLoans(); break;
+        default: content = renderDashboard();
+    }
+    app.innerHTML = renderLayout(content);
+}
+
+// === Init ===
+render();
+if (state.token) { navigate('dashboard'); }
+</script>
+</body>
+</html>

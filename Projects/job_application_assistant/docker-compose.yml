@@ -1,0 +1,72 @@
+# Docker Compose stack for the Job Application Assistant.
+#
+#   db       — PostgreSQL 15 with a persistent volume
+#   backend  — FastAPI API (runs migrations on startup, serves on :8000)
+#   frontend — nginx serving the SPA and proxying /api to the backend
+#
+# Usage:
+#   cp .env.example .env   # then set LLM_API_KEY and a strong JWT_SECRET
+#   docker compose up --build
+#
+# Then open http://localhost:8080
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jaa_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jaa_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-job_application_assistant}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jaa_user} -d ${POSTGRES_DB:-job_application_assistant}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      # Override the default localhost URL so the API reaches the db service.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-jaa_user}:${POSTGRES_PASSWORD:-jaa_pass}@db:5432/${POSTGRES_DB:-job_application_assistant}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-super-secret-key}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-1440}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["*"]}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_MODEL: ${LLM_MODEL:-llama-3.3-70b-versatile}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      # OpenAI-compatible endpoint (e.g. Groq/OpenRouter/Ollama). Omit for OpenAI.
+      LLM_API_BASE: ${LLM_API_BASE:-}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.2}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-2048}
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: 8000
+    volumes:
+      # Persist uploaded and generated documents across restarts.
+      - uploads:/app/uploads
+      - generated:/app/generated
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:
+  generated:

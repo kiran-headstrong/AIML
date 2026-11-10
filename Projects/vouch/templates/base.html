@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}VOUCH by Vectis{% endblock %}</title>
+  <style>
+    :root { --navy:#0f2a43; --teal:#1f8a8a; --bg:#f5f7fa; --line:#e2e8f0; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:#1a2433; }
+    header { background:var(--navy); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; }
+    header .brand { font-weight:700; letter-spacing:1px; font-size:20px; }
+    header .brand span { color:#5ad1d1; }
+    header nav a { color:#cfe3ef; text-decoration:none; margin-left:18px; font-size:14px; }
+    header nav a:hover { color:#fff; }
+    .container { max-width:1000px; margin:28px auto; padding:0 20px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px; margin-bottom:18px; }
+    h1 { font-size:24px; } h2 { font-size:18px; margin-top:0; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:10px; border-bottom:1px solid var(--line); font-size:14px; }
+    th { color:#5a6b7b; font-weight:600; }
+    .btn { display:inline-block; background:var(--teal); color:#fff; border:none; padding:9px 16px; border-radius:7px; cursor:pointer; text-decoration:none; font-size:14px; }
+    .btn.secondary { background:#fff; color:var(--navy); border:1px solid var(--line); }
+    .btn.warn { background:#b45309; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; background:#e6f3f3; color:#0f6d6d; }
+    .pill { padding:2px 9px; border-radius:20px; font-size:12px; background:#eef2f6; color:#465668; }
+    input,textarea,select { width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; font-size:14px; font-family:inherit; }
+    .row { display:flex; gap:14px; flex-wrap:wrap; }
+    .msg { padding:10px 14px; border-radius:7px; margin-bottom:10px; font-size:14px; }
+    .msg.success { background:#e6f6ec; color:#1b6b3a; }
+    .msg.error { background:#fdeaea; color:#a12121; }
+    .rating-Excellent { color:#15803d; font-weight:700; }
+    .rating-Good { color:#1f8a8a; font-weight:700; }
+    .rating-Fair { color:#b45309; font-weight:700; }
+    .rating-Poor { color:#b91c1c; font-weight:700; }
+    .muted { color:#78889a; font-size:13px; }
+    label { font-size:13px; color:#5a6b7b; display:block; margin:8px 0 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">VOUCH<span>·</span>Vectis</div>
+    <nav>
+      <a href="{% url 'public_home' %}">Public reports</a>
+      {% if user.is_authenticated %}
+        {% if user.profile.role == 'business' %}<a href="{% url 'business_home' %}">My portal</a>{% else %}<a href="{% url 'dashboard' %}">Dashboard</a>{% endif %}
+        {% if user.is_superuser %}<a href="{% url 'audit_trail' %}">Audit</a><a href="/admin/">Admin</a>{% endif %}
+        <a href="{% url 'logout' %}">Logout ({{ user.username }})</a>
+      {% else %}
+        <a href="{% url 'login' %}">Staff / Business login</a>
+      {% endif %}
+    </nav>
+  </header>
+  <div class="container">
+    {% if messages %}{% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}{% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

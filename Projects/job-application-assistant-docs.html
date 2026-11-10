@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Assistant — Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-alt: #334155;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-heading: #f8fafc;
+            --border: #475569;
+            --code-bg: #0d1117;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent) 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #fff;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.85);
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .hero-badges {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        .hero-badge {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Navigation */
+        .toc {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .toc a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .toc a:hover {
+            color: var(--text-heading);
+            background: var(--bg-card-alt);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Sections */
+        section {
+            margin-bottom: 3rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        .section-header h2 {
+            font-size: 1.8rem;
+            color: var(--text-heading);
+            font-weight: 700;
+        }
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            transition: border-color 0.2s;
+        }
+        .card:hover {
+            border-color: var(--primary-light);
+        }
+        .card h3 {
+            color: var(--text-heading);
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+        }
+        .card h4 {
+            color: var(--primary-light);
+            font-size: 0.95rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* User story banner */
+        .user-story {
+            background: linear-gradient(90deg, rgba(37,99,235,0.15), transparent);
+            border-left: 3px solid var(--primary);
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1rem;
+            font-style: italic;
+            color: var(--text);
+        }
+
+        /* Acceptance criteria */
+        .criteria-list {
+            list-style: none;
+            padding: 0;
+        }
+        .criteria-list li {
+            padding: 0.5rem 0 0.5rem 2rem;
+            position: relative;
+            border-bottom: 1px solid rgba(71,85,105,0.4);
+            font-size: 0.92rem;
+        }
+        .criteria-list li:last-child { border-bottom: none; }
+        .criteria-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0.5rem;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Glossary grid */
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+        }
+        .glossary-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+        .glossary-item strong {
+            color: var(--primary-light);
+        }
+
+        /* Tech decisions table */
+        .tech-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .tech-table th {
+            background: var(--primary-dark);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .tech-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .tech-table tr:nth-child(even) td {
+            background: rgba(30,41,59,0.5);
+        }
+
+        /* API table */
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+        .api-table th {
+            background: var(--bg-card-alt);
+            color: var(--text-heading);
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            position: sticky;
+            top: 52px;
+        }
+        .api-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(71,85,105,0.3);
+            vertical-align: top;
+        }
+        .method-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .method-get { background: rgba(16,185,129,0.2); color: var(--success); }
+        .method-post { background: rgba(37,99,235,0.2); color: var(--primary-light); }
+        .method-patch { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .method-delete { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .auth-yes { color: var(--success); }
+        .auth-no { color: var(--text-muted); }
+        code.path {
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            font-size: 0.82rem;
+        }
+
+        /* Mermaid diagrams */
+        .mermaid-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #c9d1d9;
+        }
+        .code-block .kw { color: #ff7b72; }
+        .code-block .fn { color: #d2a8ff; }
+        .code-block .str { color: #a5d6ff; }
+        .code-block .cls { color: #79c0ff; }
+        .code-block .cmt { color: #8b949e; }
+        .code-block .tp { color: #ffa657; }
+
+        /* Task list */
+        .task-group {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .task-group-header {
+            background: var(--bg-card-alt);
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+        .task-group-header .task-num {
+            background: var(--primary);
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .task-group-body {
+            padding: 1rem 1.25rem;
+        }
+        .subtask {
+            padding: 0.4rem 0 0.4rem 1.5rem;
+            position: relative;
+            font-size: 0.9rem;
+        }
+        .subtask::before {
+            content: '○';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+        .subtask.optional::after {
+            content: 'optional';
+            margin-left: 0.5rem;
+            font-size: 0.7rem;
+            background: rgba(245,158,11,0.2);
+            color: var(--warning);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+        .task-detail {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding-left: 1.5rem;
+            margin-top: 0.25rem;
+        }
+
+        /* DB table definitions */
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin: 0.5rem 0 1.5rem;
+        }
+        .db-table th {
+            background: var(--bg-card-alt);
+            color: var(--text-heading);
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        .db-table td {
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid rgba(71,85,105,0.3);
+            font-family: 'Consolas', monospace;
+            font-size: 0.82rem;
+        }
+
+        /* User flow diagram */
+        .flow-section {
+            margin: 2rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .glossary-grid { grid-template-columns: 1fr; }
+            .container { padding: 1rem; }
+        }
+
+        /* Scroll padding for anchors */
+        [id] { scroll-margin-top: 70px; }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <div class="hero">
+        <h1>🚀 Job Application Assistant</h1>
+        <p>A full-stack AI-powered portal that scrapes job descriptions, matches resumes, generates tailored documents, and prepares you for interviews.</p>
+        <div class="hero-badges">
+            <span class="hero-badge">FastAPI</span>
+            <span class="hero-badge">PostgreSQL</span>
+            <span class="hero-badge">LangChain + LLM</span>
+            <span class="hero-badge">python-docx</span>
+            <span class="hero-badge">BeautifulSoup4</span>
+            <span class="hero-badge">Vanilla JS SPA</span>
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <a href="#overview">Overview</a>
+        <a href="#glossary">Glossary</a>
+        <a href="#requirements">Requirements</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#user-flow">User Flow</a>
+        <a href="#components">Components</a>
+        <a href="#api">API Routes</a>
+        <a href="#data-model">Data Model</a>
+        <a href="#tech-decisions">Tech Decisions</a>
+        <a href="#tasks">Implementation Plan</a>
+    </nav>
+
+    <div class="container">
+
+        <!-- Overview -->
+        <section id="overview">
+            <div class="section-header">
+                <div class="section-icon">📋</div>
+                <h2>Overview</h2>
+            </div>
+            <div class="card">
+                <p>The Job Application Assistant is a full-stack web application that automates and streamlines the job application lifecycle. It scrapes job descriptions from LinkedIn and Naukri, extracts tech stacks, matches them against a user's uploaded resume, generates tailored resumes and cover letters, provides interview preparation materials, and offers a tracking dashboard for managing applications.</p>
+                <p style="margin-top: 1rem;">The system follows a modular architecture with a <strong>Python/FastAPI</strong> backend, a <strong>PostgreSQL</strong> database for persistence, and a <strong>single-page frontend</strong>. AI/LLM capabilities power text analysis (tech stack extraction, resume matching, interview Q&A generation), while dedicated libraries handle document parsing and generation.</p>
+            </div>
+        </section>
+
+        <!-- Glossary -->
+        <section id="glossary">
+            <div class="section-header">
+                <div class="section-icon">📖</div>
+                <h2>Glossary</h2>
+            </div>
+            <div class="glossary-grid">
+                <div class="glossary-item"><strong>Portal</strong> — The Job Application Assistant web application providing all job application assistance features.</div>
+                <div class="glossary-item"><strong>JD_Scraper</strong> — Component that fetches and extracts job description content from external URLs.</div>
+                <div class="glossary-item"><strong>Tech_Stack_Extractor</strong> — Analyzes a JD and identifies required technologies, frameworks, tools, and skills.</div>
+                <div class="glossary-item"><strong>Resume_Matcher</strong> — Compares a parsed JD against the user's base resume and calculates a match score.</div>
+                <div class="glossary-item"><strong>Resume_Editor</strong> — Generates resume edit suggestions and produces a modified Word document.</div>
+                <div class="glossary-item"><strong>Interview_Prep_Generator</strong> — Generates interview topics and categorized Q&A sets based on a JD.</div>
+                <div class="glossary-item"><strong>Base_Resume</strong> — The user's existing resume uploaded to the Portal, used as baseline for comparison.</div>
+                <div class="glossary-item"><strong>Match_Score</strong> — Percentage (0–100) representing resume-to-JD alignment.</div>
+                <div class="glossary-item"><strong>Experience_Level</strong> — User's self-reported level (Fresher, Junior, Mid, Senior, Lead/Architect).</div>
+                <div class="glossary-item"><strong>Difficulty_Category</strong> — Classification of interview questions: Easy, Medium, or Difficult.</div>
+            </div>
+        </section>
+
+        <!-- Requirements -->
+        <section id="requirements">
+            <div class="section-header">
+                <div class="section-icon">✅</div>
+                <h2>Requirements</h2>
+            </div>
+
+            <!-- Req 1 -->
+            <div class="card">
+                <h3>Requirement 1: Job Description Scraping</h3>
+                <div class="user-story">As a job seeker, I want to provide a job posting URL from LinkedIn or Naukri so that the portal can automatically extract the job description without manual copy-pasting.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>WHEN a user provides a valid LinkedIn job posting URL, THE JD_Scraper SHALL extract the job title, company name, job description text, and listed requirements.</li>
+                    <li>WHEN a user provides a valid Naukri job posting URL, THE JD_Scraper SHALL extract the job title, company name, job description text, and listed requirements.</li>
+                    <li>IF the URL is not a recognized LinkedIn or Naukri URL, THEN return a descriptive error message indicating the URL is unsupported.</li>
+                    <li>IF the fetch fails due to network error or access restriction, THEN return a descriptive error message indicating the failure reason.</li>
+                    <li>WHEN successfully scraped, present the extracted JD to the user for confirmation before further analysis.</li>
+                </ul>
+            </div>
+
+            <!-- Req 2 -->
+            <div class="card">
+                <h3>Requirement 2: Tech Stack Extraction</h3>
+                <div class="user-story">As a job seeker, I want to see the tech stack required for a job so that I can quickly understand the technical expectations.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Identify and list all programming languages, frameworks, libraries, tools, databases, and cloud platforms mentioned in the JD.</li>
+                    <li>Categorize extracted technologies into "Required" and "Nice-to-Have" based on JD language.</li>
+                    <li>If no technologies found, inform the user and suggest manual review.</li>
+                </ul>
+            </div>
+
+            <!-- Req 3 -->
+            <div class="card">
+                <h3>Requirement 3: Resume Upload, Parsing, and Persistence</h3>
+                <div class="user-story">As a job seeker, I want to upload my resume once and have it saved for future use so that I do not need to re-upload it every time.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Accept Base_Resume uploads in PDF (.pdf) and Word (.docx) formats.</li>
+                    <li>Parse the resume and extract structured sections: contact info, skills, work experience, education, certifications.</li>
+                    <li>Persist the Base_Resume and parsed data for reuse across sessions.</li>
+                    <li>Use stored Base_Resume for all subsequent analyses without re-upload.</li>
+                    <li>Replace previously stored resume when a new one is uploaded.</li>
+                    <li>Allow user to view stored resume details (file name, upload date, skills summary).</li>
+                    <li>Return descriptive errors for unsupported file types or corrupted/unreadable files.</li>
+                </ul>
+            </div>
+
+            <!-- Req 4 -->
+            <div class="card">
+                <h3>Requirement 4: Resume-to-JD Matching</h3>
+                <div class="user-story">As a job seeker, I want to see how well my resume matches a job description so that I can assess my fit for the role.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Compute a Match_Score as a percentage (0–100) representing alignment.</li>
+                    <li>Provide breakdown: matched skills, missing skills, matched experience keywords, missing experience keywords.</li>
+                    <li>Display score with summary categorization: "Strong Match", "Moderate Match", or "Weak Match".</li>
+                    <li>Weight technical skills, experience, and education separately with individual sub-scores.</li>
+                </ul>
+            </div>
+
+            <!-- Req 5 -->
+            <div class="card">
+                <h3>Requirement 5: Resume Edit Suggestions</h3>
+                <div class="user-story">As a job seeker, I want specific suggestions on how to improve my resume for a particular job.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Generate specific, actionable edit suggestions to improve alignment.</li>
+                    <li>Categorize suggestions: "Skills to Add", "Experience Descriptions to Rephrase", "Keywords to Include", "Sections to Reorder".</li>
+                    <li>Prioritize by estimated impact on Match_Score (high-impact first).</li>
+                    <li>Preserve factual accuracy — only rephrase, reorder, and optimize keywords.</li>
+                </ul>
+            </div>
+
+            <!-- Req 6 -->
+            <div class="card">
+                <h3>Requirement 6: Tailored Resume Generation in Word Document</h3>
+                <div class="user-story">As a job seeker, I want a new, tailored Word document resume for each job application.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Produce a new .docx with suggested changes applied to a copy of the Base_Resume.</li>
+                    <li>Preserve original formatting, fonts, and layout structure.</li>
+                    <li>Highlight or annotate modified sections for easy identification.</li>
+                    <li>Provide a download link for the generated document.</li>
+                    <li>Leave persisted Base_Resume unchanged — each generated resume is a separate document.</li>
+                    <li>Convert PDF-uploaded resumes to Word format before applying edits.</li>
+                    <li>Associate each tailored resume with the corresponding job description.</li>
+                </ul>
+            </div>
+
+            <!-- Req 7 -->
+            <div class="card">
+                <h3>Requirement 7: Interview Preparation Topics</h3>
+                <div class="user-story">As a job seeker, I want to know what topics to prepare for the interview so I can study efficiently.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Generate interview preparation topics relevant to the job description.</li>
+                    <li>Categorize into "Technical Topics", "Domain Knowledge Topics", and "Behavioral/Soft Skill Topics".</li>
+                    <li>Rank topics by relevance with the most critical first.</li>
+                </ul>
+            </div>
+
+            <!-- Req 8 -->
+            <div class="card">
+                <h3>Requirement 8: Interview Q&A Generation</h3>
+                <div class="user-story">As a job seeker, I want practice questions and answers tailored to the job and my experience level.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Generate questions and model answers for each topic.</li>
+                    <li>Categorize each question: Easy, Medium, or Difficult.</li>
+                    <li>Generate scenario-based questions with realistic workplace situations.</li>
+                    <li>Tailor depth and complexity to the user's Experience_Level.</li>
+                    <li>Minimum 5 questions per Difficulty_Category per major topic.</li>
+                    <li>Include expected answer with key points highlighted for quick review.</li>
+                </ul>
+            </div>
+
+            <!-- Req 9 -->
+            <div class="card">
+                <h3>Requirement 9: Job Application Tracking Dashboard</h3>
+                <div class="user-story">As a job seeker, I want a dashboard to track all jobs I've analyzed and applied to.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Maintain history of all analyzed JDs: title, company, date, Match_Score, tailored resume link.</li>
+                    <li>Dashboard view: tabular or card-based layout.</li>
+                    <li>Update application status: Not Applied, Applied, Interview Scheduled, Interview Completed, Offered, Rejected.</li>
+                    <li>Add/edit free-text feedback notes per entry.</li>
+                    <li>Delete job entries from the dashboard.</li>
+                    <li>Auto-create dashboard entry with "Not Applied" status on new JD analysis.</li>
+                    <li>Filter and sort by status, date, company name, or Match_Score.</li>
+                    <li>Summary view: total analyzed, applied, interviews scheduled, offers received.</li>
+                </ul>
+            </div>
+
+            <!-- Req 10 -->
+            <div class="card">
+                <h3>Requirement 10: Cover Letter Generation</h3>
+                <div class="user-story">As a job seeker, I want a tailored cover letter for each job without writing one from scratch.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Generate cover letter tailored to JD, incorporating skills and experience from Base_Resume.</li>
+                    <li>Structure: opening paragraph, body paragraphs highlighting qualifications, closing paragraph.</li>
+                    <li>Adjust tone and content depth based on Experience_Level.</li>
+                    <li>Allow user to review and manually edit before downloading.</li>
+                    <li>Provide download link in .docx format.</li>
+                    <li>Associate with corresponding job entry in tracking dashboard.</li>
+                </ul>
+            </div>
+
+            <!-- Req 11 -->
+            <div class="card">
+                <h3>Requirement 11: Skill Gap Analysis and Learning Resources</h3>
+                <div class="user-story">As a job seeker, I want to understand my skill gaps and get learning resource recommendations.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Identify all skills in JD that are absent from Base_Resume.</li>
+                    <li>Categorize gaps: "Critical" (required) and "Recommended" (nice-to-have).</li>
+                    <li>Suggest learning resources for each gap.</li>
+                    <li>Display skill gap analysis alongside Match_Score breakdown.</li>
+                </ul>
+            </div>
+
+            <!-- Req 12 -->
+            <div class="card">
+                <h3>Requirement 12: Application Deadline and Reminder Tracking</h3>
+                <div class="user-story">As a job seeker, I want to set deadlines and reminders so I don't miss application windows.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Set application deadline date per job entry.</li>
+                    <li>Display days remaining indicator for entries with deadlines and "Not Applied" status.</li>
+                    <li>Urgent visual indicator when deadline is within 2 days.</li>
+                    <li>Edit or remove deadlines from any entry.</li>
+                    <li>Sort by approaching deadlines.</li>
+                </ul>
+            </div>
+
+            <!-- Req 13 -->
+            <div class="card">
+                <h3>Requirement 13: Job Description Comparison</h3>
+                <div class="user-story">As a job seeker, I want to compare multiple JDs side by side to prioritize applications.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Select two or more analyzed JDs for side-by-side comparison.</li>
+                    <li>Structured comparison: title, company, required/preferred skills, experience, Match_Score.</li>
+                    <li>Highlight differences and commonalities in required skills.</li>
+                    <li>Indicate which role has the highest Match_Score.</li>
+                </ul>
+            </div>
+
+            <!-- Req 14 -->
+            <div class="card">
+                <h3>Requirement 14: Export Interview Preparation as PDF</h3>
+                <div class="user-story">As a job seeker, I want to download interview prep as a PDF for offline study.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Export interview topics and Q&A as a PDF document.</li>
+                    <li>Format with clear section headings, difficulty labels, and readable answers.</li>
+                    <li>Include job title and company name for reference.</li>
+                    <li>Provide download link for the generated PDF.</li>
+                </ul>
+            </div>
+
+            <!-- Req 15 -->
+            <div class="card">
+                <h3>Requirement 15: JD Parsing and Pretty Printing</h3>
+                <div class="user-story">As a job seeker, I want a well-structured view of the scraped JD to quickly understand the role.</div>
+                <h4>Acceptance Criteria</h4>
+                <ul class="criteria-list">
+                    <li>Parse raw content into structured fields: title, company, location, experience, description, required/preferred skills.</li>
+                    <li>Display parsed JD in a clean, readable layout.</li>
+                    <li>Round-trip property: parsing → formatting → parsing produces an equivalent object.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture">
+            <div class="section-header">
+                <div class="section-icon">🏗️</div>
+                <h2>System Architecture</h2>
+            </div>
+            <div class="card">
+                <h3>High-Level Architecture</h3>
+                <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+graph TB
+    subgraph Client["Client Layer"]
+        FE["Frontend SPA\nHTML/CSS/JS"]
+    end
+
+    subgraph API["API Layer — FastAPI"]
+        GW["API Gateway\nCORS · Auth Middleware"]
+
+        subgraph Routers
+            JD["JD Router\n/api/jd"]
+            RES["Resume Router\n/api/resume"]
+            MATCH["Match Router\n/api/match"]
+            INTERVIEW["Interview Router\n/api/interview"]
+            DASH["Dashboard Router\n/api/dashboard"]
+            CL["Cover Letter Router\n/api/cover-letter"]
+            COMPARE["Compare Router\n/api/compare"]
+        end
+
+        subgraph Services
+            SCRAPER["JD Scraper Service"]
+            PARSER["Resume Parser Service"]
+            MATCHER["Resume Matcher Service"]
+            EDITOR["Resume Editor Service"]
+            INTERVIEW_SVC["Interview Prep Service"]
+            COVER_SVC["Cover Letter Service"]
+            EXPORT_SVC["Export Service"]
+            TECHSTACK["Tech Stack Extractor"]
+        end
+    end
+
+    subgraph Data["Data Layer"]
+        DB[("PostgreSQL 15")]
+        FS["File Storage\nuploads/ · generated/"]
+    end
+
+    subgraph External["External"]
+        LLM["LLM Provider\nvia LangChain"]
+        LINKEDIN["LinkedIn"]
+        NAUKRI["Naukri"]
+    end
+
+    FE -->|HTTP/JSON| GW
+    GW --> Routers
+    Routers --> Services
+    Services --> DB
+    Services --> FS
+    SCRAPER --> LINKEDIN
+    SCRAPER --> NAUKRI
+    Services --> LLM
+                    </pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Request Flow</h3>
+                <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+sequenceDiagram
+    actor User
+    participant FE as Frontend SPA
+    participant GW as API Gateway
+    participant Auth as Auth Middleware
+    participant Router as Router
+    participant Svc as Service
+    participant DB as PostgreSQL
+    participant LLM as LLM Provider
+
+    User->>FE: Interacts with UI
+    FE->>GW: HTTP Request + JWT Token
+    GW->>Auth: Validate Token
+    Auth-->>GW: User ID Extracted
+    GW->>Router: Route Request
+    Router->>Svc: Execute Business Logic
+    Svc->>LLM: AI Analysis (if needed)
+    LLM-->>Svc: LLM Response
+    Svc->>DB: Persist Results
+    DB-->>Svc: Confirmation
+    Svc-->>Router: Result
+    Router-->>FE: JSON Response
+    FE-->>User: Updated UI
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Flow -->
+        <section id="user-flow">
+            <div class="section-header">
+                <div class="section-icon">🔄</div>
+                <h2>User Flow</h2>
+            </div>
+            <div class="card">
+                <h3>End-to-End Application Flow</h3>
+                <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+flowchart TD
+    A["🔗 Paste Job URL\nLinkedIn / Naukri"] --> B["📄 Scrape JD\nExtract title, company, skills"]
+    B --> C["🛠️ Extract Tech Stack\nRequired vs Nice-to-Have"]
+    B --> D{"Resume\nUploaded?"}
+    D -->|No| E["📤 Upload Resume\nPDF / DOCX"]
+    E --> F["🔍 Parse Resume\nSkills, experience, education"]
+    D -->|Yes| F
+    F --> G["📊 Compute Match Score\n0–100% with breakdown"]
+    G --> H["💡 Generate Edit Suggestions\nPrioritized by impact"]
+    G --> I["📉 Skill Gap Analysis\nCritical vs Recommended"]
+    H --> J["📝 Generate Tailored Resume\n.docx with highlights"]
+    G --> K["🎯 Interview Prep Topics\nTechnical · Domain · Behavioral"]
+    K --> L["❓ Generate Q&A\nEasy · Medium · Difficult · Scenario"]
+    L --> M["📥 Export as PDF"]
+    G --> N["✉️ Generate Cover Letter\n.docx download"]
+    B --> O["📋 Dashboard Entry Created\nStatus: Not Applied"]
+    O --> P["🗂️ Track & Manage\nFilter · Sort · Update Status"]
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Components -->
+        <section id="components">
+            <div class="section-header">
+                <div class="section-icon">⚙️</div>
+                <h2>Service Components</h2>
+            </div>
+
+            <div class="card">
+                <h3>1. JD Scraper Service</h3>
+                <p>Fetch and extract structured job description data from LinkedIn and Naukri URLs.</p>
+                <div class="code-block">
+<span class="kw">class</span> <span class="cls">ScrapedJD</span>(<span class="cls">BaseModel</span>):
+    job_title: <span class="tp">str</span>
+    company_name: <span class="tp">str</span>
+    location: <span class="tp">str | None</span>
+    experience_required: <span class="tp">str | None</span>
+    description_body: <span class="tp">str</span>
+    required_skills: <span class="tp">list[str]</span>
+    preferred_skills: <span class="tp">list[str]</span>
+    raw_html: <span class="tp">str</span>
+
+<span class="kw">class</span> <span class="cls">JDScraperService</span>:
+    <span class="kw">async def</span> <span class="fn">scrape</span>(self, url: <span class="tp">str</span>) -> <span class="cls">ScrapedJD</span>: ...
+    <span class="kw">def</span> <span class="fn">_detect_platform</span>(self, url: <span class="tp">str</span>) -> <span class="tp">str</span>: ...
+    <span class="kw">def</span> <span class="fn">parse_to_structured</span>(self, raw_text: <span class="tp">str</span>) -> <span class="cls">ScrapedJD</span>: ...
+    <span class="kw">def</span> <span class="fn">format_pretty</span>(self, jd: <span class="cls">ScrapedJD</span>) -> <span class="tp">str</span>: ...
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>2. Tech Stack Extractor</h3>
+                <p>Analyze job descriptions and extract categorized technology requirements via LLM.</p>
+                <div class="code-block">
+<span class="kw">class</span> <span class="cls">TechStackItem</span>(<span class="cls">BaseModel</span>):
+    name: <span class="tp">str</span>
+    category: <span class="tp">str</span>   <span class="cmt"># "language", "framework", "database", "cloud", "tool"</span>
+    priority: <span class="tp">str</span>   <span class="cmt"># "required" or "nice_to_have"</span>
+
+<span class="kw">class</span> <span class="cls">TechStackExtractorService</span>:
+    <span class="kw">async def</span> <span class="fn">extract</span>(self, jd_text: <span class="tp">str</span>) -> <span class="cls">TechStackResult</span>: ...
+    <span class="kw">async def</span> <span class="fn">identify_skill_gaps</span>(self, tech_stack, resume_skills) -> <span class="cls">SkillGapResult</span>: ...
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>3. Resume Parser Service</h3>
+                <p>Parse uploaded resumes (PDF/DOCX) into structured data using LLM section extraction.</p>
+                <div class="code-block">
+<span class="kw">class</span> <span class="cls">ParsedResume</span>(<span class="cls">BaseModel</span>):
+    contact: <span class="cls">ContactInfo</span>
+    skills: <span class="tp">list[str]</span>
+    experience: <span class="tp">list[WorkExperience]</span>
+    education: <span class="tp">list[Education]</span>
+    certifications: <span class="tp">list[str]</span>
+    raw_text: <span class="tp">str</span>
+
+<span class="kw">class</span> <span class="cls">ResumeParserService</span>:
+    <span class="kw">def</span> <span class="fn">parse</span>(self, file_path: <span class="tp">str</span>, file_type: <span class="tp">str</span>) -> <span class="cls">ParsedResume</span>: ...
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>4. Resume Matcher Service</h3>
+                <p>Compute weighted match scores between resumes and job descriptions.</p>
+                <div class="code-block">
+<span class="kw">class</span> <span class="cls">MatchBreakdown</span>(<span class="cls">BaseModel</span>):
+    overall_score: <span class="tp">float</span>   <span class="cmt"># 0-100</span>
+    skills_score: <span class="tp">float</span>
+    experience_score: <span class="tp">float</span>
+    education_score: <span class="tp">float</span>
+    matched_skills: <span class="tp">list[str]</span>
+    missing_skills: <span class="tp">list[str]</span>
+    category: <span class="tp">str</span>   <span class="cmt"># "Strong Match", "Moderate Match", "Weak Match"</span>
+
+<span class="kw">class</span> <span class="cls">ResumeMatcherService</span>:
+    <span class="kw">def</span> <span class="fn">compute_match</span>(self, parsed_resume, scraped_jd) -> <span class="cls">MatchBreakdown</span>: ...
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>5. Resume Editor Service</h3>
+                <p>Generate edit suggestions and produce tailored Word documents.</p>
+                <div class="code-block">
+<span class="kw">class</span> <span class="cls">EditSuggestion</span>(<span class="cls">BaseModel</span>):
+    category: <span class="tp">str</span>    <span class="cmt"># "skills_to_add", "experience_rephrase", etc.</span>
+    description: <span class="tp">str</span>
+    impact: <span class="tp">str</span>      <span class="cmt"># "high", "medium", "low"</span>
+    original_text: <span class="tp">str | None</span>
+    suggested_text: <span class="tp">str | None</span>
+
+<span class="kw">class</span> <span class="cls">ResumeEditorService</span>:
+    <span class="kw">async def</span> <span class="fn">generate_suggestions</span>(self, match, resume, jd) -> <span class="tp">list[EditSuggestion]</span>: ...
+    <span class="kw">def</span> <span class="fn">generate_tailored_docx</span>(self, base_path, suggestions) -> <span class="tp">str</span>: ...
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>6. Interview Prep Service</h3>
+                <p>Generate interview topics and categorized Q&A sets tailored to experience level.</p>
+                <div class="code-block">
+<span class="kw">class</span> <span class="cls">InterviewPrepService</span>:
+    <span class="kw">async def</span> <span class="fn">generate_topics</span>(self, jd) -> <span class="tp">list[InterviewTopic]</span>: ...
+    <span class="kw">async def</span> <span class="fn">generate_qa</span>(self, topics, jd, experience_level) -> <span class="tp">list[InterviewQA]</span>: ...
+    <span class="cmt"># Min 5 questions per difficulty per major topic</span>
+    <span class="cmt"># Includes scenario-based questions</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>7. Cover Letter Service &amp; 8. Export Service</h3>
+                <div class="code-block">
+<span class="kw">class</span> <span class="cls">CoverLetterService</span>:
+    <span class="kw">async def</span> <span class="fn">generate</span>(self, resume, jd, experience_level) -> <span class="tp">str</span>: ...
+    <span class="kw">def</span> <span class="fn">export_docx</span>(self, content, job_title, company) -> <span class="tp">str</span>: ...
+
+<span class="kw">class</span> <span class="cls">ExportService</span>:
+    <span class="kw">def</span> <span class="fn">export_interview_prep_pdf</span>(self, topics, qa, job_title, company) -> <span class="tp">str</span>: ...
+                </div>
+            </div>
+        </section>
+
+        <!-- API Routes -->
+        <section id="api">
+            <div class="section-header">
+                <div class="section-icon">🌐</div>
+                <h2>API Routes</h2>
+            </div>
+            <div class="card" style="overflow-x: auto;">
+                <table class="api-table">
+                    <thead>
+                        <tr><th>Method</th><th>Path</th><th>Description</th><th>Auth</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/auth/register</code></td><td>Register user</td><td class="auth-no">✗</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/auth/login</code></td><td>Login, get JWT</td><td class="auth-no">✗</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/auth/me</code></td><td>Current user profile</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/jd/scrape</code></td><td>Scrape JD from URL</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/jd/{id}</code></td><td>Get scraped JD details</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/jd/{id}/tech-stack</code></td><td>Get extracted tech stack</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/resume/upload</code></td><td>Upload base resume</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/resume</code></td><td>Get current resume details</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/match/{jd_id}</code></td><td>Compute match score</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/match/{jd_id}</code></td><td>Get match results</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/match/{jd_id}/suggestions</code></td><td>Get resume edit suggestions</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/match/{jd_id}/generate-resume</code></td><td>Generate tailored resume</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/match/{jd_id}/download-resume</code></td><td>Download tailored resume</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/match/{jd_id}/skill-gaps</code></td><td>Get skill gap analysis</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/interview/{jd_id}/topics</code></td><td>Generate interview topics</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/interview/{jd_id}/qa</code></td><td>Generate Q&A sets</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/interview/{jd_id}/export-pdf</code></td><td>Export interview prep as PDF</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/cover-letter/{jd_id}</code></td><td>Generate cover letter</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/cover-letter/{jd_id}/download</code></td><td>Download cover letter .docx</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/dashboard</code></td><td>Get application dashboard</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-patch">PATCH</span></td><td><code class="path">/api/dashboard/{entry_id}</code></td><td>Update status/notes/deadline</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-delete">DELETE</span></td><td><code class="path">/api/dashboard/{entry_id}</code></td><td>Delete dashboard entry</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-get">GET</span></td><td><code class="path">/api/dashboard/summary</code></td><td>Get dashboard summary stats</td><td class="auth-yes">✓</td></tr>
+                        <tr><td><span class="method-badge method-post">POST</span></td><td><code class="path">/api/compare</code></td><td>Compare multiple JDs</td><td class="auth-yes">✓</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Data Model -->
+        <section id="data-model">
+            <div class="section-header">
+                <div class="section-icon">🗄️</div>
+                <h2>Data Model</h2>
+            </div>
+
+            <div class="card">
+                <h3>Entity-Relationship Diagram</h3>
+                <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+erDiagram
+    USERS ||--o| BASE_RESUME : has
+    USERS ||--o{ JOB_ENTRIES : tracks
+    JOB_ENTRIES ||--|| SCRAPED_JD : references
+    JOB_ENTRIES ||--o| MATCH_RESULT : has
+    JOB_ENTRIES ||--o| TAILORED_RESUME : has
+    JOB_ENTRIES ||--o| COVER_LETTER : has
+    JOB_ENTRIES ||--o{ INTERVIEW_TOPIC : has
+    JOB_ENTRIES ||--o{ INTERVIEW_QA : has
+    SCRAPED_JD ||--o{ TECH_STACK_ITEM : contains
+
+    USERS {
+        uuid id PK
+        string email UK
+        string password_hash
+        string name
+        string experience_level
+        timestamp created_at
+    }
+
+    BASE_RESUME {
+        uuid id PK
+        uuid user_id FK
+        string file_name
+        string file_type
+        string file_path
+        json parsed_data
+        text raw_text
+        timestamp uploaded_at
+    }
+
+    SCRAPED_JD {
+        uuid id PK
+        string job_title
+        string company_name
+        string location
+        string experience_required
+        text description_body
+        json required_skills
+        json preferred_skills
+        text raw_html
+        timestamp scraped_at
+    }
+
+    TECH_STACK_ITEM {
+        uuid id PK
+        uuid jd_id FK
+        string name
+        string category
+        string priority
+    }
+
+    JOB_ENTRIES {
+        uuid id PK
+        uuid user_id FK
+        uuid jd_id FK
+        string status
+        float match_score
+        text notes
+        date deadline
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    MATCH_RESULT {
+        uuid id PK
+        uuid job_entry_id FK
+        float overall_score
+        float skills_score
+        float experience_score
+        float education_score
+        json matched_skills
+        json missing_skills
+        string category
+        timestamp computed_at
+    }
+
+    TAILORED_RESUME {
+        uuid id PK
+        uuid job_entry_id FK
+        string file_path
+        json applied_suggestions
+        timestamp generated_at
+    }
+
+    COVER_LETTER {
+        uuid id PK
+        uuid job_entry_id FK
+        text content
+        string file_path
+        timestamp generated_at
+    }
+
+    INTERVIEW_TOPIC {
+        uuid id PK
+        uuid job_entry_id FK
+        string name
+        string category
+        int relevance_rank
+    }
+
+    INTERVIEW_QA {
+        uuid id PK
+        uuid job_entry_id FK
+        uuid topic_id FK
+        text question
+        text answer
+        json key_points
+        string difficulty
+        boolean is_scenario_based
+    }
+                    </pre>
+                </div>
+            </div>
+
+            <!-- Table Definitions -->
+            <div class="card">
+                <h3>Table Definitions</h3>
+
+                <h4>users</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>email</td><td>VARCHAR(255)</td><td>UNIQUE, NOT NULL</td></tr>
+                        <tr><td>password_hash</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+                        <tr><td>name</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+                        <tr><td>experience_level</td><td>VARCHAR(50)</td><td>NULLABLE</td></tr>
+                        <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT now()</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>base_resumes</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>user_id</td><td>UUID</td><td>FK → users.id, UNIQUE</td></tr>
+                        <tr><td>file_name</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+                        <tr><td>file_type</td><td>VARCHAR(10)</td><td>NOT NULL ("pdf" or "docx")</td></tr>
+                        <tr><td>file_path</td><td>VARCHAR(500)</td><td>NOT NULL</td></tr>
+                        <tr><td>parsed_data</td><td>JSONB</td><td>NOT NULL</td></tr>
+                        <tr><td>raw_text</td><td>TEXT</td><td>NOT NULL</td></tr>
+                        <tr><td>uploaded_at</td><td>TIMESTAMP</td><td>DEFAULT now()</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>scraped_jds</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>job_title</td><td>VARCHAR(500)</td><td>NOT NULL</td></tr>
+                        <tr><td>company_name</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+                        <tr><td>location</td><td>VARCHAR(255)</td><td>NULLABLE</td></tr>
+                        <tr><td>experience_required</td><td>VARCHAR(100)</td><td>NULLABLE</td></tr>
+                        <tr><td>description_body</td><td>TEXT</td><td>NOT NULL</td></tr>
+                        <tr><td>required_skills</td><td>JSONB</td><td>NOT NULL, default []</td></tr>
+                        <tr><td>preferred_skills</td><td>JSONB</td><td>NOT NULL, default []</td></tr>
+                        <tr><td>raw_html</td><td>TEXT</td><td>NOT NULL</td></tr>
+                        <tr><td>scraped_at</td><td>TIMESTAMP</td><td>DEFAULT now()</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>tech_stack_items</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>jd_id</td><td>UUID</td><td>FK → scraped_jds.id, ON DELETE CASCADE</td></tr>
+                        <tr><td>name</td><td>VARCHAR(100)</td><td>NOT NULL</td></tr>
+                        <tr><td>category</td><td>VARCHAR(50)</td><td>NOT NULL</td></tr>
+                        <tr><td>priority</td><td>VARCHAR(20)</td><td>NOT NULL</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>job_entries</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>user_id</td><td>UUID</td><td>FK → users.id, ON DELETE CASCADE</td></tr>
+                        <tr><td>jd_id</td><td>UUID</td><td>FK → scraped_jds.id</td></tr>
+                        <tr><td>status</td><td>VARCHAR(30)</td><td>NOT NULL, DEFAULT "not_applied"</td></tr>
+                        <tr><td>match_score</td><td>NUMERIC(5,2)</td><td>NULLABLE</td></tr>
+                        <tr><td>notes</td><td>TEXT</td><td>NULLABLE</td></tr>
+                        <tr><td>deadline</td><td>DATE</td><td>NULLABLE</td></tr>
+                        <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT now()</td></tr>
+                        <tr><td>updated_at</td><td>TIMESTAMP</td><td>DEFAULT now(), ON UPDATE now()</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>match_results</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>job_entry_id</td><td>UUID</td><td>FK → job_entries.id, UNIQUE</td></tr>
+                        <tr><td>overall_score</td><td>NUMERIC(5,2)</td><td>NOT NULL</td></tr>
+                        <tr><td>skills_score</td><td>NUMERIC(5,2)</td><td>NOT NULL</td></tr>
+                        <tr><td>experience_score</td><td>NUMERIC(5,2)</td><td>NOT NULL</td></tr>
+                        <tr><td>education_score</td><td>NUMERIC(5,2)</td><td>NOT NULL</td></tr>
+                        <tr><td>matched_skills</td><td>JSONB</td><td>NOT NULL</td></tr>
+                        <tr><td>missing_skills</td><td>JSONB</td><td>NOT NULL</td></tr>
+                        <tr><td>matched_experience_kw</td><td>JSONB</td><td>NOT NULL</td></tr>
+                        <tr><td>missing_experience_kw</td><td>JSONB</td><td>NOT NULL</td></tr>
+                        <tr><td>category</td><td>VARCHAR(20)</td><td>NOT NULL</td></tr>
+                        <tr><td>computed_at</td><td>TIMESTAMP</td><td>DEFAULT now()</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>tailored_resumes</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>job_entry_id</td><td>UUID</td><td>FK → job_entries.id, UNIQUE</td></tr>
+                        <tr><td>file_path</td><td>VARCHAR(500)</td><td>NOT NULL</td></tr>
+                        <tr><td>applied_suggestions</td><td>JSONB</td><td>NOT NULL</td></tr>
+                        <tr><td>generated_at</td><td>TIMESTAMP</td><td>DEFAULT now()</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>cover_letters</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>job_entry_id</td><td>UUID</td><td>FK → job_entries.id, UNIQUE</td></tr>
+                        <tr><td>content</td><td>TEXT</td><td>NOT NULL</td></tr>
+                        <tr><td>file_path</td><td>VARCHAR(500)</td><td>NOT NULL</td></tr>
+                        <tr><td>generated_at</td><td>TIMESTAMP</td><td>DEFAULT now()</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>interview_topics</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>job_entry_id</td><td>UUID</td><td>FK → job_entries.id, ON DELETE CASCADE</td></tr>
+                        <tr><td>name</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+                        <tr><td>category</td><td>VARCHAR(50)</td><td>NOT NULL</td></tr>
+                        <tr><td>relevance_rank</td><td>INTEGER</td><td>NOT NULL</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>interview_qas</h4>
+                <table class="db-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>UUID</td><td>PK, default uuid4</td></tr>
+                        <tr><td>job_entry_id</td><td>UUID</td><td>FK → job_entries.id, ON DELETE CASCADE</td></tr>
+                        <tr><td>topic_id</td><td>UUID</td><td>FK → interview_topics.id, ON DELETE CASCADE</td></tr>
+                        <tr><td>question</td><td>TEXT</td><td>NOT NULL</td></tr>
+                        <tr><td>answer</td><td>TEXT</td><td>NOT NULL</td></tr>
+                        <tr><td>key_points</td><td>JSONB</td><td>NOT NULL</td></tr>
+                        <tr><td>difficulty</td><td>VARCHAR(20)</td><td>NOT NULL</td></tr>
+                        <tr><td>is_scenario_based</td><td>BOOLEAN</td><td>NOT NULL, DEFAULT false</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tech Decisions -->
+        <section id="tech-decisions">
+            <div class="section-header">
+                <div class="section-icon">🧰</div>
+                <h2>Technology Decisions</h2>
+            </div>
+            <div class="card" style="overflow-x: auto;">
+                <table class="tech-table">
+                    <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
+                    <tbody>
+                        <tr><td>Backend Framework</td><td>FastAPI (Python 3.11+)</td><td>Async support, auto-generated OpenAPI docs, consistent with workspace</td></tr>
+                        <tr><td>Database</td><td>PostgreSQL 15</td><td>Relational data with complex queries, UUID PKs</td></tr>
+                        <tr><td>ORM</td><td>SQLAlchemy 2.x</td><td>Mature, well-supported, consistent with workspace</td></tr>
+                        <tr><td>LLM Integration</td><td>LangChain + configurable provider</td><td>Abstracts provider, supports prompt templating &amp; chaining</td></tr>
+                        <tr><td>Document Parsing</td><td>pypdf + python-docx</td><td>Proven libraries for PDF/DOCX extraction</td></tr>
+                        <tr><td>Document Generation</td><td>python-docx + WeasyPrint</td><td>Native .docx manipulation, HTML-to-PDF for exports</td></tr>
+                        <tr><td>Web Scraping</td><td>httpx + BeautifulSoup4</td><td>Async HTTP client + robust HTML parsing</td></tr>
+                        <tr><td>Authentication</td><td>JWT (python-jose) + bcrypt</td><td>Stateless auth, consistent with workspace</td></tr>
+                        <tr><td>Frontend</td><td>Vanilla HTML/CSS/JS SPA</td><td>Lightweight, no build step</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Technology Stack Overview</h3>
+                <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+mindmap
+    root((Job Application<br/>Assistant))
+        Backend
+            FastAPI
+            Python 3.11+
+            SQLAlchemy 2.x
+            Alembic
+        AI / LLM
+            LangChain
+            Configurable Provider
+            Prompt Templates
+        Data
+            PostgreSQL 15
+            JSONB Fields
+            UUID PKs
+        Documents
+            pypdf
+            python-docx
+            WeasyPrint
+        Scraping
+            httpx
+            BeautifulSoup4
+        Auth
+            JWT
+            bcrypt
+            passlib
+        Frontend
+            HTML5
+            CSS3
+            Vanilla JS
+            SPA Router
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Implementation Plan -->
+        <section id="tasks">
+            <div class="section-header">
+                <div class="section-icon">📝</div>
+                <h2>Implementation Plan</h2>
+            </div>
+
+            <div class="card">
+                <h3>Implementation Phases</h3>
+                <div class="mermaid-wrapper">
+                    <pre class="mermaid">
+gantt
+    title Implementation Roadmap
+    dateFormat YYYY-MM-DD
+    axisFormat %b %d
+
+    section Foundation
+    Project Setup & DB Models     :t1, 2026-09-24, 3d
+    Authentication System         :t2, after t1, 2d
+    Checkpoint 1                  :milestone, m1, after t2, 0d
+
+    section Core Backend
+    JD Scraping & Tech Stack      :t4, after m1, 3d
+    Resume Upload & Parsing       :t5, after t4, 2d
+    Resume Matching & Skill Gaps  :t6, after t5, 3d
+    Checkpoint 2                  :milestone, m2, after t6, 0d
+
+    section Advanced Backend
+    Resume Editor & Tailored Docs :t8, after m2, 3d
+    Interview Prep Service        :t9, after t8, 3d
+    Cover Letter Generation       :t10, after t9, 2d
+    PDF Export Service            :t11, after t10, 1d
+    Checkpoint 3                  :milestone, m3, after t11, 0d
+
+    section Dashboard & APIs
+    Dashboard API                 :t13, after m3, 2d
+    JD Comparison API             :t14, after t13, 1d
+    Wire All Routers              :t15, after t14, 1d
+    Checkpoint 4                  :milestone, m4, after t15, 0d
+
+    section Frontend
+    Auth & Layout                 :t17, after m4, 2d
+    Core Feature Pages            :t18, after t17, 3d
+    Advanced Feature Pages        :t19, after t18, 3d
+    Dashboard Page                :t20, after t19, 2d
+    Final Checkpoint              :milestone, m5, after t20, 0d
+                    </pre>
+                </div>
+            </div>
+
+            <!-- Task Groups -->
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">1</span> Set up project structure, configuration, and database models</div>
+                <div class="task-group-body">
+                    <div class="subtask">1.1 Create project directory structure and install dependencies</div>
+                    <div class="subtask">1.2 Define SQLAlchemy models for all database tables</div>
+                    <div class="subtask">1.3 Create Pydantic schemas for API request/response validation</div>
+                    <div class="subtask">1.4 Set up database connection and Alembic migrations</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">2</span> Implement authentication system</div>
+                <div class="task-group-body">
+                    <div class="subtask">2.1 Implement user registration and login endpoints</div>
+                    <div class="subtask optional">2.2 Write unit tests for authentication</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">3</span> Checkpoint — Ensure project bootstraps and auth works</div>
+                <div class="task-group-body"><div class="task-detail">Verify all tests pass, resolve any issues before proceeding.</div></div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">4</span> Implement JD Scraping and Tech Stack Extraction</div>
+                <div class="task-group-body">
+                    <div class="subtask">4.1 Implement JD Scraper Service</div>
+                    <div class="subtask">4.2 Implement Tech Stack Extractor Service</div>
+                    <div class="subtask">4.3 Create JD API routes</div>
+                    <div class="subtask optional">4.4 Write unit tests for JD Scraper and Tech Stack Extractor</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">5</span> Implement Resume Upload, Parsing, and Persistence</div>
+                <div class="task-group-body">
+                    <div class="subtask">5.1 Implement Resume Parser Service</div>
+                    <div class="subtask">5.2 Create Resume API routes</div>
+                    <div class="subtask optional">5.3 Write unit tests for Resume Parser</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">6</span> Implement Resume-to-JD Matching and Skill Gap Analysis</div>
+                <div class="task-group-body">
+                    <div class="subtask">6.1 Implement Resume Matcher Service</div>
+                    <div class="subtask">6.2 Implement Skill Gap Analysis in Tech Stack Extractor</div>
+                    <div class="subtask">6.3 Create Match API routes</div>
+                    <div class="subtask optional">6.4 Write unit tests for Resume Matcher and Skill Gap Analysis</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">7</span> Checkpoint — Core scraping, parsing, and matching pipeline</div>
+                <div class="task-group-body"><div class="task-detail">Verify all tests pass, resolve any issues before proceeding.</div></div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">8</span> Implement Resume Edit Suggestions and Tailored Resume Generation</div>
+                <div class="task-group-body">
+                    <div class="subtask">8.1 Implement Resume Editor Service</div>
+                    <div class="subtask">8.2 Implement tailored resume document generation</div>
+                    <div class="subtask">8.3 Create tailored resume API routes</div>
+                    <div class="subtask optional">8.4 Write unit tests for Resume Editor Service</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">9</span> Implement Interview Preparation</div>
+                <div class="task-group-body">
+                    <div class="subtask">9.1 Implement Interview Prep Service</div>
+                    <div class="subtask">9.2 Create Interview API routes</div>
+                    <div class="subtask optional">9.3 Write unit tests for Interview Prep Service</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">10</span> Implement Cover Letter Generation</div>
+                <div class="task-group-body">
+                    <div class="subtask">10.1 Implement Cover Letter Service</div>
+                    <div class="subtask">10.2 Create Cover Letter API routes</div>
+                    <div class="subtask optional">10.3 Write unit tests for Cover Letter Service</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">11</span> Implement Interview Prep PDF Export</div>
+                <div class="task-group-body">
+                    <div class="subtask">11.1 Implement Export Service</div>
+                    <div class="subtask optional">11.2 Write unit tests for Export Service</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">12</span> Checkpoint — All backend services and API routes</div>
+                <div class="task-group-body"><div class="task-detail">Full backend verification before frontend development.</div></div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">13</span> Implement Job Application Tracking Dashboard API</div>
+                <div class="task-group-body">
+                    <div class="subtask">13.1 Create Dashboard API routes</div>
+                    <div class="subtask">13.2 Implement deadline tracking logic</div>
+                    <div class="subtask optional">13.3 Write unit tests for Dashboard API</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">14</span> Implement JD Comparison API</div>
+                <div class="task-group-body">
+                    <div class="subtask">14.1 Create Compare API route</div>
+                    <div class="subtask optional">14.2 Write unit tests for JD Comparison</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">15</span> Wire all routers into FastAPI application</div>
+                <div class="task-group-body"><div class="task-detail">Register all routers, consistent error handling, CORS configuration.</div></div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">16</span> Checkpoint — Complete backend is functional</div>
+                <div class="task-group-body"><div class="task-detail">All backend tests pass before moving to frontend.</div></div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">17</span> Build Frontend SPA — Authentication and Layout</div>
+                <div class="task-group-body">
+                    <div class="subtask">17.1 Create base HTML structure and navigation</div>
+                    <div class="subtask">17.2 Implement login and registration pages</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">18</span> Build Frontend SPA — Core Feature Pages</div>
+                <div class="task-group-body">
+                    <div class="subtask">18.1 Implement JD scraping page</div>
+                    <div class="subtask">18.2 Implement resume upload and display page</div>
+                    <div class="subtask">18.3 Implement match results and suggestions page</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">19</span> Build Frontend SPA — Advanced Feature Pages</div>
+                <div class="task-group-body">
+                    <div class="subtask">19.1 Implement interview preparation page</div>
+                    <div class="subtask">19.2 Implement cover letter page</div>
+                    <div class="subtask">19.3 Implement job comparison page</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">20</span> Build Frontend SPA — Dashboard</div>
+                <div class="task-group-body">
+                    <div class="subtask">20.1 Implement tracking dashboard page with full CRUD, filters, sorting, and summary stats</div>
+                </div>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-header"><span class="task-num">21</span> Final Checkpoint — Full application works end-to-end</div>
+                <div class="task-group-body"><div class="task-detail">Complete integration testing across all features.</div></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer style="background: var(--bg-card); border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+        <p>Job Application Assistant — Technical Documentation</p>
+        <p style="margin-top: 0.5rem;">Generated from spec: <code>.kiro/specs/job-application-assistant/</code></p>
+    </footer>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: { useMaxWidth: true, htmlLabels: true },
+            er: { useMaxWidth: true },
+            gantt: { useMaxWidth: true },
+            mindmap: { useMaxWidth: true }
+        });
+    </script>
+</body>
+</html>

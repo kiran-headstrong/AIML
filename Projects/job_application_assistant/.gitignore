@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# File storage (keep dirs, ignore contents)
+uploads/*
+generated/*
+!uploads/.gitkeep
+!generated/.gitkeep
+
+# Alembic local state (keep versions/ once created)
+
+# OS / editor
+.DS_Store
+*.swp

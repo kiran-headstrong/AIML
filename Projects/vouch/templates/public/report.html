@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ report.business_name }} · VOUCH report{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="row" style="justify-content:space-between;align-items:center;">
+    <div>
+      <h1 style="margin-bottom:4px;">{{ report.business_name }}</h1>
+      <span class="pill">{{ report.category_name }}</span>
+      <span class="badge">VOUCH verified</span>
+    </div>
+    <div style="text-align:right;">
+      <div class="rating-{{ report.rating }}" style="font-size:28px;">{{ report.rating }}</div>
+      <div class="muted">{{ report.score }}% overall</div>
+    </div>
+  </div>
+  <p class="muted">
+    Assessed on {{ report.assessment_date }} · Valid until {{ report.valid_until }} · Version {{ report.version }}
+    {% if not valid %}<strong style="color:#b91c1c;"> · EXPIRED - re-assessment due</strong>{% endif %}
+  </p>
+</div>
+
+<div class="card">
+  <h2>Summary</h2>
+  <p>{{ report.summary }}</p>
+</div>
+
+<div class="card">
+  <h2>Findings</h2>
+  <table>
+    <tr><th>Criterion</th><th>Score</th><th>Notes</th></tr>
+    {% for f in report.findings %}
+    <tr>
+      <td>{{ f.criterion }}</td>
+      <td>{{ f.value }} / {{ f.max }}</td>
+      <td class="muted">{{ f.note|default:"—" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="muted" style="margin-top:14px;">This report is a frozen snapshot of the approved assessment.
+  Internal working papers and raw evidence remain confidential to Vectis.</p>
+</div>
+{% endblock %}

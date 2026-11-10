@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ a.business_name }} · VOUCH{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="row" style="justify-content:space-between;align-items:center;">
+    <div>
+      <h1 style="margin-bottom:4px;">{{ a.business_name }}</h1>
+      <span class="pill">{{ a.category.name }}</span>
+      <span class="badge">{{ a.get_stage_display }}</span>
+    </div>
+    <div style="text-align:right;">
+      {% if a.total_score != None %}
+        <div class="rating-{{ a.rating }}" style="font-size:24px;">{{ a.rating }}</div>
+        <div class="muted">{{ a.total_score }}%</div>
+      {% endif %}
+    </div>
+  </div>
+  <p class="muted">Assessor: {{ a.assessor.username|default:"—" }} · Reviewer: {{ a.reviewer.username|default:"—" }}
+    · Business: {{ a.business_user.username|default:"—" }}
+    · Consent: {% if a.consent_given %}given {{ a.consent_at|date:"Y-m-d H:i" }}{% else %}not given{% endif %}</p>
+
+  <div class="row">
+    {% if a.stage != 'published' and a.stage != 'business_review' %}
+      <form method="post" action="{% url 'advance_stage' a.pk %}">{% csrf_token %}
+        <button class="btn" type="submit">Advance stage →</button>
+      </form>
+    {% endif %}
+    {% if a.stage == 'senior_approval' or a.stage == 'peer_review' %}
+      <span class="muted" style="align-self:center;">An assessor cannot approve their own work.</span>
+    {% endif %}
+    {% if a.stage == 'business_review' %}
+      <form method="post" action="{% url 'publish' a.pk %}">{% csrf_token %}
+        <button class="btn warn" type="submit" {% if not a.consent_given %}disabled{% endif %}>Publish approved report</button>
+      </form>
+      {% if not a.consent_given %}<span class="muted" style="align-self:center;">Waiting on business consent.</span>{% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Business-submitted information</h2>
+  <p>{{ a.business_info|default:"No information submitted yet."|linebreaksbr }}</p>
+</div>
+
+{% if role == 'admin' or role == 'assessor' %}
+<div class="card">
+  <h2>Scoring against category criteria</h2>
+  <form method="post" action="{% url 'save_scores' a.pk %}">{% csrf_token %}
+    <table>
+      <tr><th>Criterion</th><th>Weight</th><th>Score</th><th>Note</th></tr>
+      {% for c, s in scoring_rows %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td>{{ c.weight }}</td>
+        <td style="width:90px;"><input type="number" min="0" max="{{ c.max_score }}" name="score_{{ c.id }}" value="{{ s.value|default:0 }}"></td>
+        <td><input name="note_{{ c.id }}" value="{{ s.note|default:'' }}"></td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div style="margin-top:12px;"><button class="btn" type="submit">Save scores</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Internal summary (private)</h2>
+  <form method="post" action="{% url 'save_summary' a.pk %}">{% csrf_token %}
+    {{ summary_form.summary }}
+    <div style="margin-top:10px;"><button class="btn" type="submit">Save summary</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Evidence (private storage)</h2>
+  <table>
+    <tr><th>Type</th><th>Source</th><th>Collected by</th><th>When</th><th>Integrity hash</th><th></th></tr>
+    {% for ev in a.evidence.all %}
+    <tr>
+      <td>{{ ev.evidence_type }}</td>
+      <td>{{ ev.source|default:"—" }}</td>
+      <td>{{ ev.collected_by.username|default:"—" }}</td>
+      <td>{{ ev.collected_at|date:"Y-m-d H:i" }}</td>
+      <td class="muted" title="{{ ev.file_hash }}">{{ ev.file_hash|slice:":12" }}…</td>
+      <td><a class="btn secondary" href="{% url 'evidence_download' ev.pk %}">Download</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="muted">No evidence uploaded.</td></tr>
+    {% endfor %}
+  </table>
+  <form method="post" action="{% url 'add_evidence' a.pk %}" enctype="multipart/form-data" style="margin-top:14px;">
+    {% csrf_token %}
+    <div class="row">
+      <div style="flex:1;"><label>Type</label>{{ evidence_form.evidence_type }}</div>
+      <div style="flex:1;"><label>Source</label>{{ evidence_form.source }}</div>
+    </div>
+    <label>File</label>{{ evidence_form.file }}
+    <div style="margin-top:12px;"><button class="btn" type="submit">Upload evidence</button></div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

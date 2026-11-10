@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Audit trail · VOUCH{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Audit trail</h1>
+  <p class="muted">Append-only log of views, edits and approvals (most recent first).</p>
+  <table>
+    <tr><th>When</th><th>Actor</th><th>Action</th><th>Assessment</th><th>Detail</th></tr>
+    {% for e in entries %}
+    <tr>
+      <td>{{ e.created_at|date:"Y-m-d H:i:s" }}</td>
+      <td>{{ e.actor.username|default:"—" }}</td>
+      <td><span class="pill">{{ e.action }}</span></td>
+      <td>{{ e.assessment.business_name|default:"—" }}</td>
+      <td class="muted">{{ e.detail }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

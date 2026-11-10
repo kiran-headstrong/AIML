@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ a.business_name }} · My portal{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>{{ a.business_name }}</h1>
+  <span class="pill">{{ a.category.name }}</span>
+  <span class="badge">{{ status_label }}</span>
+  <p class="muted">You see only business-visible updates. Internal evidence and working papers stay confidential.</p>
+</div>
+
+<div class="card">
+  <h2>Information request</h2>
+  <p class="muted">Provide the information requested by the Vectis team.</p>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="submit_info">
+    {{ info_form.business_info }}
+    <div style="margin-top:12px;"><button class="btn" type="submit">Submit information</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Status timeline</h2>
+  <p>Current status: <strong>{{ status_label }}</strong></p>
+</div>
+
+{% if a.stage == 'business_review' %}
+<div class="card">
+  <h2>Review and consent</h2>
+  {% if a.consent_given %}
+    <p class="msg success">You have given consent to publish. Thank you.</p>
+  {% else %}
+    <p>The draft assessment is ready. By consenting, you agree to publish the approved final report on VOUCH.</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="consent">
+      <button class="btn" type="submit">I consent to publish</button>
+    </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

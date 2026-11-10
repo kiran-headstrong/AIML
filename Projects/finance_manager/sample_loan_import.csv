@@ -1,0 +1,3 @@
+borrower_name,borrower_phone,borrower_email,principal,roi,tenure_months,rate_type,interest_type
+John Doe,+919876543210,john@email.com,50000,12,12,per_annum,simple
+Jane Smith,+919876543211,jane@email.com,100000,10,24,per_annum,compound

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}New assessment · VOUCH{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px;">
+  <h1>New assessment</h1>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <label>{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<div class="msg error">{{ field.errors|striptags }}</div>{% endif %}
+    {% endfor %}
+    <div style="margin-top:16px;">
+      <button class="btn" type="submit">Create</button>
+      <a class="btn secondary" href="{% url 'dashboard' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

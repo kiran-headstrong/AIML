@@ -1,6 +1,7 @@
-# This repository tracks only the ai-training-assistant project.
+# This repository tracks the ai-training-assistant project and the Projects folder.
 # Everything else in this workspace is intentionally untracked (kept on disk).
 /*
 !/.gitignore
 !/industry projects/
 !/industry projects/ai-training-assistant/
+!/Projects/

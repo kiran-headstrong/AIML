@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}My portal · VOUCH{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Your assessments</h1>
+  <p class="muted">Submit requested information, track progress and give publishing consent.</p>
+</div>
+<div class="card">
+  <table>
+    <tr><th>Business</th><th>Category</th><th>Status</th><th></th></tr>
+    {% for a in assessments %}
+    <tr>
+      <td>{{ a.business_name }}</td>
+      <td><span class="pill">{{ a.category.name }}</span></td>
+      <td><span class="badge">{{ a.get_stage_display }}</span></td>
+      <td><a class="btn secondary" href="{% url 'business_assessment' a.pk %}">Open</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="muted">No assessments yet.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

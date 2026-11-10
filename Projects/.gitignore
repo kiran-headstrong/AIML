@@ -1,0 +1,32 @@
+# Secrets — never commit live credentials
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.venv312/
+venv/
+env/
+
+# Databases / local data
+db.sqlite3
+*.sqlite3
+
+# Node
+node_modules/
+
+# Private media / uploads / generated artifacts
+private_media/
+**/generated/
+
+# Vector stores / large binary indexes
+**/vectorstore/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

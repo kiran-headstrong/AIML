@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}VOUCH by Vectis · Verified business reports{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Independent, evidence-based business assessments</h1>
+  <p class="muted">VOUCH by Vectis publishes approved assessments of trust-sensitive businesses
+  so customers can make informed decisions. Only approved reports with the business's consent appear here.</p>
+</div>
+
+<div class="card">
+  <h2>Published reports</h2>
+  {% if reports %}
+  <table>
+    <tr><th>Business</th><th>Category</th><th>Rating</th><th>Score</th><th>Assessed</th><th>Valid until</th><th></th></tr>
+    {% for r in reports %}
+    <tr>
+      <td>{{ r.business_name }}</td>
+      <td><span class="pill">{{ r.category_name }}</span></td>
+      <td class="rating-{{ r.rating }}">{{ r.rating }}</td>
+      <td>{{ r.score }}%</td>
+      <td>{{ r.assessment_date }}</td>
+      <td>{{ r.valid_until }}</td>
+      <td><a class="btn secondary" href="{% url 'public_report' r.slug %}">View</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No reports published yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

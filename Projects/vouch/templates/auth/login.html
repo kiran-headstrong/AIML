@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Login · VOUCH{% endblock %}
+{% block content %}
+<div class="card" style="max-width:420px;margin:40px auto;">
+  <h1>Sign in</h1>
+  <p class="muted">Staff and businesses log in here.</p>
+  <form method="post">
+    {% csrf_token %}
+    <label>Username</label>
+    <input name="username" autofocus>
+    <label>Password</label>
+    <input name="password" type="password">
+    <div style="margin-top:16px;"><button class="btn" type="submit">Sign in</button></div>
+  </form>
+  <hr style="margin:18px 0;border:none;border-top:1px solid var(--line);">
+  <p class="muted">Demo accounts: admin / assessor / reviewer / business<br>
+  (password is each name + "123", e.g. <code>admin123</code>)</p>
+</div>
+{% endblock %}
